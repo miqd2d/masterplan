@@ -94,10 +94,13 @@ const Layout = ({ children }: LayoutProps) => {
         <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
           <header className="h-16 border-b border-border/40 flex items-center justify-between px-6">
             <div className="flex items-center">
-              <SidebarTrigger asChild>
-                <Button variant="ghost" size="icon" className="mr-4 md:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
+              {/* Fix the issue with SidebarTrigger by removing asChild prop */}
+              <SidebarTrigger
+                variant="ghost" 
+                size="icon" 
+                className="mr-4 md:hidden"
+              >
+                <Menu className="h-5 w-5" />
               </SidebarTrigger>
               <h1 className="text-xl font-semibold">{
                 navItems.find(item => item.path === location.pathname)?.label || "Masterplan"
