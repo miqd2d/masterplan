@@ -1,0 +1,68 @@
+
+import React from 'react';
+import { cn } from '@/lib/utils';
+import GlassmorphismCard from '../ui-custom/GlassmorphismCard';
+import AnimatedChip from '../ui-custom/AnimatedChip';
+
+interface DashboardCardProps extends React.HTMLAttributes<HTMLDivElement> {
+  title: string;
+  description?: string;
+  icon?: React.ReactNode;
+  badge?: {
+    text: string;
+    color?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger';
+  };
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}
+
+const DashboardCard = ({
+  title,
+  description,
+  icon,
+  badge,
+  children,
+  footer,
+  className,
+  ...props
+}: DashboardCardProps) => {
+  return (
+    <GlassmorphismCard 
+      className={cn("overflow-hidden", className)} 
+      {...props}
+    >
+      <div className="px-5 py-4 border-b border-border/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {icon && (
+              <div className="text-muted-foreground">
+                {icon}
+              </div>
+            )}
+            <h3 className="font-medium">{title}</h3>
+          </div>
+          {badge && (
+            <AnimatedChip color={badge.color || 'default'}>
+              {badge.text}
+            </AnimatedChip>
+          )}
+        </div>
+        {description && (
+          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+        )}
+      </div>
+      
+      <div className="p-5">
+        {children}
+      </div>
+      
+      {footer && (
+        <div className="px-5 py-3 border-t border-border/30 bg-secondary/30">
+          {footer}
+        </div>
+      )}
+    </GlassmorphismCard>
+  );
+};
+
+export default DashboardCard;
