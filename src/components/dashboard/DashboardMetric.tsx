@@ -17,7 +17,8 @@ const metricVariants = cva('', {
   },
 });
 
-interface DashboardMetricProps extends VariantProps<typeof metricVariants> {
+// Remove extending VariantProps since we're defining trend differently
+interface DashboardMetricProps {
   title: string;
   value: string | number;
   metricClassName?: string;
