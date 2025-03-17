@@ -16,6 +16,7 @@ const Dashboard = () => {
   useEffect(() => {
     // Seed demo data when user is available
     if (user) {
+      console.log("Attempting to seed data for user:", user.id);
       seedDemoData(user.id);
     }
   }, [user]);

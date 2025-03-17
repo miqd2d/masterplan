@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +34,11 @@ const Login = () => {
     setEmail('test@example.com');
     setPassword('test@123');
   };
+  
+  // Auto fill demo credentials on first load
+  useEffect(() => {
+    fillDemoCredentials();
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
@@ -41,6 +46,7 @@ const Login = () => {
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold">Welcome to EduTrack</h1>
           <p className="text-muted-foreground">Sign in to manage your educational resources</p>
+          <p className="mt-2 text-sm text-primary">Demo credentials pre-filled for you!</p>
         </div>
 
         <Tabs defaultValue="login" className="w-full">

@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 export async function seedDemoData(userId: string) {
   try {
+    console.log("Seeding data for user:", userId);
+    
     // First check if data already exists
     const { data: existingStudents } = await supabase
       .from('students')
@@ -27,7 +29,11 @@ export async function seedDemoData(userId: string) {
       { name: 'Hannah Montana', email: 'hannah.m@example.com', course_id: 'CS201', attendance: 88, performance: 'Good', user_id: userId },
     ];
     
-    await supabase.from('students').insert(studentsData);
+    const { error: studentsError } = await supabase.from('students').insert(studentsData);
+    if (studentsError) {
+      console.error("Error seeding students:", studentsError);
+      throw studentsError;
+    }
     
     // Seed lessons
     const lessonsData = [
@@ -66,7 +72,11 @@ export async function seedDemoData(userId: string) {
       }
     ];
     
-    await supabase.from('lessons').insert(lessonsData);
+    const { error: lessonsError } = await supabase.from('lessons').insert(lessonsData);
+    if (lessonsError) {
+      console.error("Error seeding lessons:", lessonsError);
+      throw lessonsError;
+    }
     
     // Seed assignments
     const assignmentsData = [
@@ -122,7 +132,11 @@ export async function seedDemoData(userId: string) {
       }
     ];
     
-    await supabase.from('assignments').insert(assignmentsData);
+    const { error: assignmentsError } = await supabase.from('assignments').insert(assignmentsData);
+    if (assignmentsError) {
+      console.error("Error seeding assignments:", assignmentsError);
+      throw assignmentsError;
+    }
     
     console.log('Demo data seeded successfully');
   } catch (error) {
