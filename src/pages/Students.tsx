@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,20 +7,65 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, Download, Filter, Plus } from 'lucide-react';
 import GlassmorphismCard from '@/components/ui-custom/GlassmorphismCard';
 import AnimatedChip from '@/components/ui-custom/AnimatedChip';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
-// Mock student data
-const students = [
-  { id: 1, name: 'Alice Johnson', email: 'alice.johnson@example.com', course: 'CS101', attendance: 94, performance: 'Excellent' },
-  { id: 2, name: 'Bob Smith', email: 'bob.smith@example.com', course: 'CS201', attendance: 87, performance: 'Good' },
-  { id: 3, name: 'Charlie Brown', email: 'charlie.brown@example.com', course: 'CS301', attendance: 72, performance: 'Needs Improvement' },
-  { id: 4, name: 'Diana Prince', email: 'diana.prince@example.com', course: 'CS101', attendance: 96, performance: 'Excellent' },
-  { id: 5, name: 'Ethan Hunt', email: 'ethan.hunt@example.com', course: 'CS201', attendance: 83, performance: 'Good' },
-  { id: 6, name: 'Fiona Gallagher', email: 'fiona.g@example.com', course: 'CS301', attendance: 65, performance: 'At Risk' },
-  { id: 7, name: 'George Wilson', email: 'george.wilson@example.com', course: 'CS101', attendance: 91, performance: 'Excellent' },
-  { id: 8, name: 'Hannah Montana', email: 'hannah.m@example.com', course: 'CS201', attendance: 88, performance: 'Good' },
-];
+// Define the student type
+interface Student {
+  id: string;
+  name: string;
+  email: string;
+  course_id: string;
+  attendance: number;
+  performance: string;
+}
 
 const StudentsPage = () => {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchStudents() {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('students')
+          .select('*')
+          .eq('user_id', user.id);
+          
+        if (error) {
+          throw error;
+        }
+        
+        setStudents(data || []);
+      } catch (error) {
+        console.error('Error fetching students:', error);
+        toast({
+          title: 'Error fetching students',
+          description: 'There was a problem loading your students.',
+          variant: 'destructive'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchStudents();
+  }, [user, toast]);
+
+  // Filter students based on search query
+  const filteredStudents = students.filter(student => 
+    student.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.course_id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -28,7 +73,12 @@ const StudentsPage = () => {
           <div className="flex gap-2 flex-1">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search students..." className="pl-9 glass border-0" />
+              <Input 
+                placeholder="Search students..." 
+                className="pl-9 glass border-0"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
             <Button variant="outline" className="glass border-0">
               <Filter className="h-4 w-4 mr-2" />
@@ -49,60 +99,74 @@ const StudentsPage = () => {
         
         <GlassmorphismCard className="overflow-hidden">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Course</TableHead>
-                  <TableHead>Attendance</TableHead>
-                  <TableHead>Performance</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {students.map((student) => (
-                  <TableRow key={student.id} className="hover:bg-secondary/40 transition-colors">
-                    <TableCell className="font-medium">{student.name}</TableCell>
-                    <TableCell>{student.email}</TableCell>
-                    <TableCell>{student.course}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className={`${
-                          student.attendance >= 90 ? 'text-green-600' :
-                          student.attendance >= 75 ? 'text-amber-600' :
-                          'text-red-600'
-                        }`}>
-                          {student.attendance}%
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <AnimatedChip
-                        color={
-                          student.performance === 'Excellent' ? 'success' :
-                          student.performance === 'Good' ? 'primary' :
-                          student.performance === 'Needs Improvement' ? 'warning' :
-                          'danger'
-                        }
-                      >
-                        {student.performance}
-                      </AnimatedChip>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">View</Button>
-                      <Button variant="ghost" size="sm">Email</Button>
-                    </TableCell>
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Course</TableHead>
+                    <TableHead>Attendance</TableHead>
+                    <TableHead>Performance</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredStudents.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        {searchQuery ? 'No students matching your search' : 'No students found'}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredStudents.map((student) => (
+                      <TableRow key={student.id} className="hover:bg-secondary/40 transition-colors">
+                        <TableCell className="font-medium">{student.name}</TableCell>
+                        <TableCell>{student.email}</TableCell>
+                        <TableCell>{student.course_id}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className={`${
+                              student.attendance >= 90 ? 'text-green-600' :
+                              student.attendance >= 75 ? 'text-amber-600' :
+                              'text-red-600'
+                            }`}>
+                              {student.attendance}%
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <AnimatedChip
+                            color={
+                              student.performance === 'Excellent' ? 'success' :
+                              student.performance === 'Good' ? 'primary' :
+                              student.performance === 'Needs Improvement' ? 'warning' :
+                              'danger'
+                            }
+                          >
+                            {student.performance}
+                          </AnimatedChip>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm">View</Button>
+                          <Button variant="ghost" size="sm">Email</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </GlassmorphismCard>
         
         <div className="flex justify-between items-center">
           <div className="text-sm text-muted-foreground">
-            Showing 1-8 of 248 students
+            Showing {filteredStudents.length} of {students.length} students
           </div>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="sm" disabled>Previous</Button>

@@ -9,13 +9,189 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      assignments: {
+        Row: {
+          average_score: number | null
+          course: string
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          status: string | null
+          submission_rate: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_score?: number | null
+          course: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string | null
+          submission_rate?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_score?: number | null
+          course?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string | null
+          submission_rate?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lessons: {
+        Row: {
+          created_at: string
+          id: string
+          lessons_completed: number | null
+          next_lesson_date: string | null
+          next_lesson_time: string | null
+          next_lesson_title: string | null
+          progress: number | null
+          status: string | null
+          title: string
+          total_lessons: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lessons_completed?: number | null
+          next_lesson_date?: string | null
+          next_lesson_time?: string | null
+          next_lesson_title?: string | null
+          progress?: number | null
+          status?: string | null
+          title: string
+          total_lessons?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lessons_completed?: number | null
+          next_lesson_date?: string | null
+          next_lesson_time?: string | null
+          next_lesson_title?: string | null
+          progress?: number | null
+          status?: string | null
+          title?: string
+          total_lessons?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          attendance: number | null
+          course_id: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          performance: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attendance?: number | null
+          course_id: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          performance?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attendance?: number | null
+          course_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          performance?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_auth_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

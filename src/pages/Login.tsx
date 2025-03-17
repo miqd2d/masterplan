@@ -1,135 +1,141 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
+import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/AuthContext';
 import GlassmorphismCard from '@/components/ui-custom/GlassmorphismCard';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
-
-const loginSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters long' }),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const navigate = useNavigate();
-  const [showPassword, setShowPassword] = React.useState(false);
-  
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const { signIn, signUp, user, loading } = useAuth();
 
-  const onSubmit = async (data: LoginFormValues) => {
-    try {
-      // This would normally connect to your authentication API
-      console.log('Login attempt:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success('Login successful!');
-      navigate('/dashboard');
-    } catch (error) {
-      toast.error('Failed to login. Please check your credentials.');
-      console.error('Login error:', error);
-    }
+  // Redirect if already logged in
+  if (user && !loading) {
+    return <Navigate to="/dashboard" />;
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await signIn(email, password);
   };
 
-  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await signUp(email, password, fullName);
+  };
+
+  // Pre-fill for demo purposes
+  const fillDemoCredentials = () => {
+    setEmail('test@example.com');
+    setPassword('test@123');
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/30 p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <GlassmorphismCard className="p-8">
-          <div className="space-y-6">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold">Welcome Back</h1>
-              <p className="text-muted-foreground mt-2">Sign in to your account to continue</p>
-            </div>
-            
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+      <GlassmorphismCard className="w-full max-w-md overflow-hidden px-6 py-8">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold">Welcome to EduTrack</h1>
+          <p className="text-muted-foreground">Sign in to manage your educational resources</p>
+        </div>
+
+        <Tabs defaultValue="login" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="login">
+            <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input 
+                <Input
                   id="email"
                   type="email"
-                  placeholder="name@example.com"
-                  {...register('email')}
+                  placeholder="your.email@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
-                {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
-                )}
               </div>
-              
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input 
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    {...register('password')}
-                  />
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                    Forgot password?
+                  </Link>
                 </div>
-                {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password.message}</p>
-                )}
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </div>
-              
-              <div className="flex items-center justify-end">
-                <a href="#" className="text-sm text-primary hover:underline">
-                  Forgot password?
-                </a>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
+              <div className="text-center text-sm text-muted-foreground">
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  onClick={fillDemoCredentials}
+                  className="text-primary"
+                >
+                  Use demo credentials
+                </Button>
               </div>
-              
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Signing in...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <LogIn className="h-4 w-4" />
-                    Sign In
-                  </span>
-                )}
+            </form>
+          </TabsContent>
+
+          <TabsContent value="signup">
+            <form onSubmit={handleSignUp} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="John Doe"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="emailSignup">Email</Label>
+                <Input
+                  id="emailSignup"
+                  type="email"
+                  placeholder="your.email@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="passwordSignup">Password</Label>
+                <Input
+                  id="passwordSignup"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Creating account...' : 'Create Account'}
               </Button>
             </form>
-            
-            <div className="text-center text-sm">
-              <span className="text-muted-foreground">Don't have an account? </span>
-              <a href="#" className="text-primary hover:underline font-medium" onClick={(e) => { e.preventDefault(); navigate('/register'); }}>
-                Sign up
-              </a>
-            </div>
-          </div>
-        </GlassmorphismCard>
-      </motion.div>
+          </TabsContent>
+        </Tabs>
+      </GlassmorphismCard>
     </div>
   );
 };
