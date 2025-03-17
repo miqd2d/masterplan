@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import GlassmorphismCard from '@/components/ui-custom/GlassmorphismCard';
-import { Bot, SendIcon, Loader2 } from 'lucide-react';
+import { Bot, SendIcon, Loader2, Mic, MicOff } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,8 +23,107 @@ const ContextAI: React.FC<ContextAIProps> = ({ placeholder = "Ask about your dat
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState('');
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // References for voice recording
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  
+  // Voice recording functions
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+      
+      mediaRecorder.onstop = handleAudioStop;
+      
+      mediaRecorder.start();
+      setIsRecording(true);
+      
+      toast({
+        title: "Recording started",
+        description: "Speak clearly into your microphone",
+      });
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      toast({
+        title: "Microphone Error",
+        description: "Could not access your microphone. Please check permissions.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      
+      // Stop all tracks to release the microphone
+      if (mediaRecorderRef.current.stream) {
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      }
+    }
+  };
+  
+  const handleAudioStop = async () => {
+    setIsLoading(true);
+    
+    try {
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+      
+      reader.onloadend = async () => {
+        const base64data = reader.result as string;
+        // Remove the data URL prefix (e.g., "data:audio/webm;base64,")
+        const base64Audio = base64data.split(',')[1];
+        
+        // Call Supabase Edge Function for transcription
+        const { data, error } = await supabase.functions.invoke('transcribe-audio', {
+          body: { audio: base64Audio }
+        });
+        
+        if (error) {
+          throw new Error(`Transcription error: ${error.message}`);
+        }
+        
+        if (data && data.text) {
+          setTranscript(data.text);
+          setInput(data.text);
+          
+          toast({
+            title: "Transcription complete",
+            description: "Your speech has been converted to text",
+          });
+        } else {
+          throw new Error('No transcription returned');
+        }
+      };
+    } catch (error) {
+      console.error('Error processing audio:', error);
+      toast({
+        title: "Transcription Error",
+        description: "Failed to convert speech to text. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +138,7 @@ const ContextAI: React.FC<ContextAIProps> = ({ placeholder = "Ask about your dat
     
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setTranscript('');
     setIsLoading(true);
     
     try {
@@ -162,18 +262,17 @@ const ContextAI: React.FC<ContextAIProps> = ({ placeholder = "Ask about your dat
     return null;
   };
 
+  // Clean up microphone access when component unmounts
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.stream) {
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
   return (
-    <GlassmorphismCard className="overflow-hidden flex flex-col h-full">
-      <div className="p-4 border-b border-border/40 flex items-center gap-2">
-        <div className="bg-primary rounded-full w-8 h-8 flex items-center justify-center">
-          <Bot className="h-4 w-4 text-primary-foreground" />
-        </div>
-        <div>
-          <h3 className="font-medium">Data Analysis Assistant</h3>
-          <p className="text-xs text-muted-foreground">Get insights from your educational data</p>
-        </div>
-      </div>
-      
+    <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
           <div className="text-center py-6 text-muted-foreground">
@@ -215,29 +314,49 @@ const ContextAI: React.FC<ContextAIProps> = ({ placeholder = "Ask about your dat
             </div>
           </div>
         )}
+        {transcript && !isLoading && (
+          <div className="flex justify-end">
+            <div className="max-w-[80%] px-4 py-2 rounded-xl bg-secondary/30 text-muted-foreground">
+              <p>{transcript}</p>
+            </div>
+          </div>
+        )}
       </div>
       
       <form onSubmit={handleSendMessage} className="p-4 border-t border-border/40">
-        <div className="relative">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={placeholder}
-            className="pr-10 glass border-0"
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant={isRecording ? "destructive" : "outline"}
+            size="icon"
+            className="flex-shrink-0"
+            onClick={isRecording ? stopRecording : startRecording}
             disabled={isLoading}
-          />
-          <Button 
-            type="submit" 
-            variant="ghost" 
-            size="icon" 
-            className="absolute right-0 top-0 h-full" 
-            disabled={!input.trim() || isLoading}
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <SendIcon className="h-4 w-4" />}
+            {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
           </Button>
+          
+          <div className="relative flex-1">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={placeholder}
+              className="pr-10 glass border-0"
+              disabled={isLoading || isRecording}
+            />
+            <Button 
+              type="submit" 
+              variant="ghost" 
+              size="icon" 
+              className="absolute right-0 top-0 h-full" 
+              disabled={!input.trim() || isLoading || isRecording}
+            >
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <SendIcon className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </form>
-    </GlassmorphismCard>
+    </div>
   );
 };
 

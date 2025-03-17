@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { seedDemoData } from '@/utils/seedData';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +6,6 @@ import AttendanceChart from './AttendanceChart';
 import ProgressChart from './ProgressChart';
 import DashboardCard from './DashboardCard';
 import DashboardMetric from './DashboardMetric';
-import GlassmorphismCard from '@/components/ui-custom/GlassmorphismCard';
 import ContextAI from '@/components/context-ai/ContextAI';
 import { supabase } from '@/integrations/supabase/client';
 import { Calendar, FileText, Users, FolderKanban, GraduationCap, AlertTriangle, Award, Clock } from 'lucide-react';
@@ -192,37 +190,13 @@ const Dashboard = () => {
           </DashboardCard>
         </section>
         
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <DashboardCard title="Upcoming Lessons" icon={<Clock className="h-5 w-5" />}>
-              <ul className="space-y-4">
-                <li>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Recursion and Recursive Algorithms</span>
-                    <span className="text-xs">CS101</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">Today, 09:00 - 10:30</div>
-                </li>
-                <li>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Graph Algorithms</span>
-                    <span className="text-xs">CS201</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">Tomorrow, 11:00 - 12:30</div>
-                </li>
-                <li>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Normalization and Database Design</span>
-                    <span className="text-xs">CS301</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">In 2 days, 14:00 - 15:30</div>
-                </li>
-              </ul>
+        <section className="grid grid-cols-1 gap-6">
+          <div className="h-[400px]">
+            <DashboardCard title="AI Assistant" icon={<Clock className="h-5 w-5" />} className="h-full">
+              <div className="h-full">
+                <ContextAI placeholder="Ask about your teaching data..." />
+              </div>
             </DashboardCard>
-          </div>
-          
-          <div className="h-[300px]">
-            <ContextAI placeholder="Ask about your teaching data..." />
           </div>
         </section>
       </div>
