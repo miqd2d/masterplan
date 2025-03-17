@@ -1,154 +1,232 @@
 
-import { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useEffect, useState } from 'react';
 import { seedDemoData } from '@/utils/seedData';
-import DashboardCard from './DashboardCard';
-import DashboardMetric from './DashboardMetric';
-import { BarChart4, BookOpen, GraduationCap, Users } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import Layout from '@/components/layout/Layout';
 import AttendanceChart from './AttendanceChart';
 import ProgressChart from './ProgressChart';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import DashboardCard from './DashboardCard';
+import DashboardMetric from './DashboardMetric';
+import GlassmorphismCard from '@/components/ui-custom/GlassmorphismCard';
+import ContextAI from '@/components/context-ai/ContextAI';
+import { supabase } from '@/integrations/supabase/client';
+import { Calendar, FileText, Users, FolderKanban, GraduationCap, AlertTriangle, Award, Clock } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataSeeded, setDataSeeded] = useState(false);
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    totalAssignments: 0,
+    totalLessons: 0,
+    assignmentsThisWeek: 0,
+    lowAttendanceCount: 0,
+  });
 
   useEffect(() => {
-    // Seed demo data when user is available
-    if (user) {
-      console.log("Attempting to seed data for user:", user.id);
-      seedDemoData(user.id);
+    async function initialize() {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Check if data exists
+        const { data: existingStudents, error: checkError } = await supabase
+          .from('students')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+          
+        if (checkError) {
+          console.error('Error checking for existing data:', checkError);
+        }
+        
+        // If no data exists, seed demo data
+        if (!existingStudents || existingStudents.length === 0) {
+          console.log('No existing data found, seeding demo data...');
+          await seedDemoData(user.id);
+          setDataSeeded(true);
+        } else {
+          console.log('Existing data found, skipping seed');
+        }
+        
+        // Fetch stats
+        const [studentsResult, assignmentsResult, lessonsResult] = await Promise.all([
+          supabase.from('students').select('*').eq('user_id', user.id),
+          supabase.from('assignments').select('*').eq('user_id', user.id),
+          supabase.from('lessons').select('*').eq('user_id', user.id)
+        ]);
+        
+        const students = studentsResult.data || [];
+        const assignments = assignmentsResult.data || [];
+        const lessons = lessonsResult.data || [];
+        
+        // Calculate stats
+        const lowAttendanceStudents = students.filter(s => s.attendance < 75);
+        const activeAssignments = assignments.filter(a => a.status === 'Active');
+        
+        setStats({
+          totalStudents: students.length,
+          totalAssignments: assignments.length,
+          totalLessons: lessons.length,
+          assignmentsThisWeek: activeAssignments.length,
+          lowAttendanceCount: lowAttendanceStudents.length,
+        });
+        
+      } catch (error) {
+        console.error('Error initializing dashboard:', error);
+      } finally {
+        setIsLoading(false);
+      }
     }
+    
+    initialize();
   }, [user]);
 
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Overview of your educational statistics and recent activity
-        </p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <DashboardMetric
-          title="Total Students"
-          value="248"
-          trend={{
-            value: "+12%",
-            direction: "up"
-          }}
-          icon={<Users className="h-4 w-4" />}
-        />
-        <DashboardMetric
-          title="Average Attendance"
-          value="87%"
-          trend={{
-            value: "+2.3%",
-            direction: "up"
-          }}
-          icon={<BarChart4 className="h-4 w-4" />}
-        />
-        <DashboardMetric
-          title="Active Courses"
-          value="12"
-          trend={{
-            value: "0%",
-            direction: "neutral"
-          }}
-          icon={<BookOpen className="h-4 w-4" />}
-        />
-        <DashboardMetric
-          title="Assignments Due"
-          value="8"
-          trend={{
-            value: "-3",
-            direction: "down"
-          }}
-          icon={<GraduationCap className="h-4 w-4" />}
-        />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <DashboardCard title="Student Attendance" className="lg:col-span-4">
-          <AttendanceChart />
-        </DashboardCard>
-        <DashboardCard title="Course Progress" className="lg:col-span-3">
+    <Layout>
+      <div className="grid gap-6">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <DashboardMetric 
+            title="Total Students" 
+            value={stats.totalStudents} 
+            icon={<Users className="h-5 w-5" />} 
+            trend={{ value: 12, direction: 'up', label: 'from last month' }}
+          />
+          <DashboardMetric 
+            title="Total Assignments" 
+            value={stats.totalAssignments} 
+            icon={<FileText className="h-5 w-5" />} 
+            trend={{ value: 8, direction: 'up', label: 'from last month' }}
+          />
+          <DashboardMetric 
+            title="Total Lessons" 
+            value={stats.totalLessons} 
+            icon={<GraduationCap className="h-5 w-5" />} 
+            trend={{ value: 2, direction: 'up', label: 'from last month' }}
+          />
+          <DashboardMetric 
+            title="Assignments This Week" 
+            value={stats.assignmentsThisWeek} 
+            icon={<FolderKanban className="h-5 w-5" />} 
+            trend={{ value: 3, direction: 'up', label: 'from last week' }}
+          />
+        </section>
+        
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ProgressChart />
-        </DashboardCard>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <DashboardCard title="Upcoming Lessons" className="lg:col-span-1">
-          <div className="space-y-4">
-            {['Introduction to Algorithms', 'Data Structures', 'Database Design'].map((lesson, i) => (
-              <div key={i} className="flex items-center gap-4 rounded-lg border p-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                  <BookOpen className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">{lesson}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {['Today', 'Tomorrow', 'May 21'][i]} • {['10:00 AM', '2:30 PM', '9:00 AM'][i]}
-                  </p>
-                </div>
-              </div>
-            ))}
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/lessons">View All Lessons</Link>
-            </Button>
-          </div>
-        </DashboardCard>
-
-        <DashboardCard title="Recent Assignments" className="lg:col-span-1">
-          <div className="space-y-4">
-            {['Data Analysis Project', 'Algorithm Implementation', 'UI Design Exercise'].map((assignment, i) => (
-              <div key={i} className="flex justify-between rounded-lg border p-3">
-                <div>
-                  <p className="font-medium">{assignment}</p>
-                  <p className="text-sm text-muted-foreground">Due {['Yesterday', 'Today', 'May 25'][i]}</p>
-                </div>
-                <div className="flex items-center">
-                  <div className={`rounded-full px-2 py-1 text-xs ${
-                    i === 0 ? 'bg-red-100 text-red-800' : 
-                    i === 1 ? 'bg-yellow-100 text-yellow-800' : 
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {['Late', 'Due', 'On Track'][i]}
+          <AttendanceChart />
+        </section>
+        
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <DashboardCard title="Upcoming Deadlines" icon={<Calendar className="h-5 w-5" />}>
+            <ul className="space-y-3">
+              <li className="flex justify-between items-center">
+                <span className="text-sm">Assignment 2: Data Types</span>
+                <span className="text-xs text-muted-foreground">Tomorrow</span>
+              </li>
+              <li className="flex justify-between items-center">
+                <span className="text-sm">Group Project: Neural Network</span>
+                <span className="text-xs text-muted-foreground">In 3 days</span>
+              </li>
+              <li className="flex justify-between items-center">
+                <span className="text-sm">Case Study: Security</span>
+                <span className="text-xs text-muted-foreground">In 5 days</span>
+              </li>
+            </ul>
+          </DashboardCard>
+          
+          <DashboardCard title="Attendance Alerts" icon={<AlertTriangle className="h-5 w-5" />}>
+            <div className="text-sm">
+              <p className="mb-2">{stats.lowAttendanceCount} students below 75% attendance</p>
+              <ul className="space-y-2">
+                {stats.lowAttendanceCount > 0 ? (
+                  <>
+                    <li className="flex justify-between">
+                      <span>Charlie Brown</span>
+                      <span className="text-red-600">72%</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Fiona Gallagher</span>
+                      <span className="text-red-600">65%</span>
+                    </li>
+                    {stats.lowAttendanceCount > 2 && (
+                      <li className="text-xs text-muted-foreground">
+                        And {stats.lowAttendanceCount - 2} more students...
+                      </li>
+                    )}
+                  </>
+                ) : (
+                  <li>No students with low attendance.</li>
+                )}
+              </ul>
+            </div>
+          </DashboardCard>
+          
+          <DashboardCard title="Top Performers" icon={<Award className="h-5 w-5" />}>
+            <ul className="space-y-3">
+              <li className="flex justify-between items-center">
+                <span className="text-sm">Diana Prince</span>
+                <span className="text-xs">96% attendance</span>
+              </li>
+              <li className="flex justify-between items-center">
+                <span className="text-sm">Steve Rogers</span>
+                <span className="text-xs">98% attendance</span>
+              </li>
+              <li className="flex justify-between items-center">
+                <span className="text-sm">Sheldon Cooper</span>
+                <span className="text-xs">99% attendance</span>
+              </li>
+            </ul>
+          </DashboardCard>
+        </section>
+        
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <DashboardCard title="Upcoming Lessons" icon={<Clock className="h-5 w-5" />}>
+              <ul className="space-y-4">
+                <li>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Recursion and Recursive Algorithms</span>
+                    <span className="text-xs">CS101</span>
                   </div>
-                </div>
-              </div>
-            ))}
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/assignments">View All Assignments</Link>
-            </Button>
-          </div>
-        </DashboardCard>
-
-        <DashboardCard title="Top Students" className="lg:col-span-1">
-          <div className="space-y-4">
-            {['Alex Johnson', 'Maya Patel', 'Sam Wilson'].map((student, i) => (
-              <div key={i} className="flex items-center gap-4 rounded-lg border p-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                  <span className="text-sm font-medium">{student.split(' ').map(n => n[0]).join('')}</span>
-                </div>
-                <div>
-                  <p className="font-medium">{student}</p>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <span>Grade: A{i === 0 ? '+' : ''}</span>
-                    <span className="mx-1">•</span>
-                    <span>Attendance: {[98, 95, 92][i]}%</span>
+                  <div className="text-xs text-muted-foreground mt-1">Today, 09:00 - 10:30</div>
+                </li>
+                <li>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Graph Algorithms</span>
+                    <span className="text-xs">CS201</span>
                   </div>
-                </div>
-              </div>
-            ))}
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/students">View All Students</Link>
-            </Button>
+                  <div className="text-xs text-muted-foreground mt-1">Tomorrow, 11:00 - 12:30</div>
+                </li>
+                <li>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Normalization and Database Design</span>
+                    <span className="text-xs">CS301</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">In 2 days, 14:00 - 15:30</div>
+                </li>
+              </ul>
+            </DashboardCard>
           </div>
-        </DashboardCard>
+          
+          <div className="h-[300px]">
+            <ContextAI placeholder="Ask about your teaching data..." />
+          </div>
+        </section>
       </div>
-    </div>
+    </Layout>
   );
 };
 

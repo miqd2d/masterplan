@@ -4,12 +4,19 @@ import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Download, Filter, Plus } from 'lucide-react';
+import { Search, Download, Filter, Plus, Mail } from 'lucide-react';
 import GlassmorphismCard from '@/components/ui-custom/GlassmorphismCard';
 import AnimatedChip from '@/components/ui-custom/AnimatedChip';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Define the student type
 interface Student {
@@ -25,8 +32,13 @@ const StudentsPage = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  const studentsPerPage = 10;
 
   useEffect(() => {
     async function fetchStudents() {
@@ -63,8 +75,31 @@ const StudentsPage = () => {
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.course_id.toLowerCase().includes(searchQuery.toLowerCase())
+    student.course_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.performance.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
+
+  const handleViewEmail = (student: Student) => {
+    setSelectedStudent(student);
+    setShowEmailDialog(true);
+  };
+
+  const handleSendEmail = () => {
+    if (!selectedStudent) return;
+    
+    toast({
+      title: 'Email Sent',
+      description: `Email has been sent to ${selectedStudent.name} at ${selectedStudent.email}`,
+    });
+    
+    setShowEmailDialog(false);
+  };
 
   return (
     <Layout>
@@ -116,14 +151,14 @@ const StudentsPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredStudents.length === 0 ? (
+                  {currentStudents.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
                         {searchQuery ? 'No students matching your search' : 'No students found'}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredStudents.map((student) => (
+                    currentStudents.map((student) => (
                       <TableRow key={student.id} className="hover:bg-secondary/40 transition-colors">
                         <TableCell className="font-medium">{student.name}</TableCell>
                         <TableCell>{student.email}</TableCell>
@@ -153,7 +188,14 @@ const StudentsPage = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <Button variant="ghost" size="sm">View</Button>
-                          <Button variant="ghost" size="sm">Email</Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleViewEmail(student)}
+                          >
+                            <Mail className="h-4 w-4 mr-2" />
+                            Email
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
@@ -166,17 +208,75 @@ const StudentsPage = () => {
         
         <div className="flex justify-between items-center">
           <div className="text-sm text-muted-foreground">
-            Showing {filteredStudents.length} of {students.length} students
+            Showing {currentStudents.length} of {filteredStudents.length} students
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" disabled>Previous</Button>
-            <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">1</Button>
-            <Button variant="outline" size="sm">2</Button>
-            <Button variant="outline" size="sm">3</Button>
-            <Button variant="outline" size="sm">Next</Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            >
+              Previous
+            </Button>
+            {[...Array(Math.min(totalPages, 5))].map((_, index) => {
+              const pageNumber = index + 1;
+              return (
+                <Button 
+                  key={pageNumber}
+                  variant="outline" 
+                  size="sm" 
+                  className={pageNumber === currentPage ? "bg-primary text-primary-foreground" : ""}
+                  onClick={() => setCurrentPage(pageNumber)}
+                >
+                  {pageNumber}
+                </Button>
+              );
+            })}
+            {totalPages > 5 && <span className="mx-1">...</span>}
+            <Button 
+              variant="outline" 
+              size="sm"
+              disabled={currentPage === totalPages || totalPages === 0}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            >
+              Next
+            </Button>
           </div>
         </div>
       </div>
+
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Email Student</DialogTitle>
+            <DialogDescription>
+              Send an email to {selectedStudent?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <div className="font-medium">To:</div>
+              <div className="col-span-3">{selectedStudent?.email}</div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <div className="font-medium">Subject:</div>
+              <Input className="col-span-3" placeholder="Enter subject" />
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="font-medium">Message:</div>
+              <textarea
+                className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="Enter your message here..."
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowEmailDialog(false)}>Cancel</Button>
+            <Button onClick={handleSendEmail}>Send Email</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
