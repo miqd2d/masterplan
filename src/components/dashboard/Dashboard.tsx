@@ -33,29 +33,37 @@ const Dashboard = () => {
         <DashboardMetric
           title="Total Students"
           value="248"
-          trend="+12%"
-          trendDirection="up"
+          trend={{
+            value: "+12%",
+            direction: "up"
+          }}
           icon={<Users className="h-4 w-4" />}
         />
         <DashboardMetric
           title="Average Attendance"
           value="87%"
-          trend="+2.3%"
-          trendDirection="up"
+          trend={{
+            value: "+2.3%",
+            direction: "up"
+          }}
           icon={<BarChart4 className="h-4 w-4" />}
         />
         <DashboardMetric
           title="Active Courses"
           value="12"
-          trend="0%"
-          trendDirection="neutral"
+          trend={{
+            value: "0%",
+            direction: "neutral"
+          }}
           icon={<BookOpen className="h-4 w-4" />}
         />
         <DashboardMetric
           title="Assignments Due"
           value="8"
-          trend="-3"
-          trendDirection="down"
+          trend={{
+            value: "-3",
+            direction: "down"
+          }}
           icon={<GraduationCap className="h-4 w-4" />}
         />
       </div>
