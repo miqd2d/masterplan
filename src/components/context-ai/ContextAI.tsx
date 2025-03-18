@@ -169,6 +169,10 @@ const ContextAI: React.FC<ContextAIProps> = ({ placeholder = "Ask about your dat
         } else if (query.includes('at risk')) {
           const atRiskStudents = students.filter(s => s.performance === 'At Risk');
           responseText = `There are ${atRiskStudents.length} students at risk: ${atRiskStudents.map(s => s.name).join(', ')}`;
+        } else if (query.includes('marks') && query.includes('below')) {
+          const threshold = parseThreshold(query) || 60;
+          const lowMarks = students.filter(s => s.marks < threshold);
+          responseText = `I found ${lowMarks.length} students with marks below ${threshold}%: ${lowMarks.map(s => s.name).join(', ')}`;
         } else {
           responseText = `I found ${students.length} students in your database. How would you like to analyze this data?`;
         }
@@ -277,7 +281,7 @@ const ContextAI: React.FC<ContextAIProps> = ({ placeholder = "Ask about your dat
         {messages.length === 0 ? (
           <div className="text-center py-6 text-muted-foreground">
             <p>Ask questions about your student data, assignments, or lessons.</p>
-            <div className="flex flex-wrap gap-2 justify-center mt-4">
+            <div className="flex flex-wrap gap-2 justify-center mt-4 max-h-48 overflow-y-auto p-2">
               <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("Show students below 75% attendance")}>
                 Students below 75% attendance
               </Badge>
@@ -286,6 +290,21 @@ const ContextAI: React.FC<ContextAIProps> = ({ placeholder = "Ask about your dat
               </Badge>
               <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("Show assignments with low submission rates")}>
                 Low submission assignments
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("Show students with marks below 60%")}>
+                Students with low marks
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("List all courses I'm teaching")}>
+                List all courses
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("Who are my top performing students?")}>
+                Top performing students
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("What's the average progress across all lessons?")}>
+                Average lesson progress
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer" onClick={() => setInput("Which assignments are due soon?")}>
+                Upcoming assignments
               </Badge>
             </div>
           </div>

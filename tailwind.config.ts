@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -156,8 +157,8 @@ export default {
 				'inner-glass': 'inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
 			},
 			fontFamily: {
-				sans: ['Arial', 'sans-serif'],
-				mono: ['JetBrains Mono', 'monospace'],
+				sans: ['Poppins', 'sans-serif'],
+				mono: ['Poppins', 'sans-serif'],
 			},
 		}
 	},

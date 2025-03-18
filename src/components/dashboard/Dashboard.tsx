@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { seedDemoData } from '@/utils/seedData';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,7 +9,8 @@ import DashboardCard from './DashboardCard';
 import DashboardMetric from './DashboardMetric';
 import ContextAI from '@/components/context-ai/ContextAI';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, FileText, Users, FolderKanban, GraduationCap, AlertTriangle, Award, Clock } from 'lucide-react';
+import { Calendar, FileText, Users, FolderKanban, GraduationCap, AlertTriangle, Award, Clock, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -20,6 +22,7 @@ const Dashboard = () => {
     totalLessons: 0,
     assignmentsThisWeek: 0,
     lowAttendanceCount: 0,
+    lowMarksCount: 0,
   });
 
   useEffect(() => {
@@ -62,6 +65,7 @@ const Dashboard = () => {
         
         // Calculate stats
         const lowAttendanceStudents = students.filter(s => s.attendance < 75);
+        const lowMarksStudents = students.filter(s => s.marks < 60);
         const activeAssignments = assignments.filter(a => a.status === 'Active');
         
         setStats({
@@ -70,6 +74,7 @@ const Dashboard = () => {
           totalLessons: lessons.length,
           assignmentsThisWeek: activeAssignments.length,
           lowAttendanceCount: lowAttendanceStudents.length,
+          lowMarksCount: lowMarksStudents ? lowMarksStudents.length : 0,
         });
         
       } catch (error) {
@@ -95,6 +100,14 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="grid gap-6">
+        <section className="flex justify-between items-center">
+          <h2 className="text-2xl font-semibold">Overview</h2>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Student
+          </Button>
+        </section>
+      
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <DashboardMetric 
             title="Total Students" 
@@ -152,11 +165,11 @@ const Dashboard = () => {
                 {stats.lowAttendanceCount > 0 ? (
                   <>
                     <li className="flex justify-between">
-                      <span>Charlie Brown</span>
+                      <span>Rahul Sharma</span>
                       <span className="text-red-600">72%</span>
                     </li>
                     <li className="flex justify-between">
-                      <span>Fiona Gallagher</span>
+                      <span>Priya Patel</span>
                       <span className="text-red-600">65%</span>
                     </li>
                     {stats.lowAttendanceCount > 2 && (
@@ -175,16 +188,16 @@ const Dashboard = () => {
           <DashboardCard title="Top Performers" icon={<Award className="h-5 w-5" />}>
             <ul className="space-y-3">
               <li className="flex justify-between items-center">
-                <span className="text-sm">Diana Prince</span>
-                <span className="text-xs">96% attendance</span>
+                <span className="text-sm">Arjun Mehta</span>
+                <span className="text-xs">96% marks</span>
               </li>
               <li className="flex justify-between items-center">
-                <span className="text-sm">Steve Rogers</span>
-                <span className="text-xs">98% attendance</span>
+                <span className="text-sm">Kavita Reddy</span>
+                <span className="text-xs">94% marks</span>
               </li>
               <li className="flex justify-between items-center">
-                <span className="text-sm">Sheldon Cooper</span>
-                <span className="text-xs">99% attendance</span>
+                <span className="text-sm">Rajesh Kumar</span>
+                <span className="text-xs">92% marks</span>
               </li>
             </ul>
           </DashboardCard>

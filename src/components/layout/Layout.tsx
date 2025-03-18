@@ -16,6 +16,7 @@ import {
   MicIcon
 } from 'lucide-react';
 import VoiceAssistant from '../voice-assistant/VoiceAssistant';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -31,9 +32,14 @@ const navItems = [
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const [isVoiceAssistantOpen, setIsVoiceAssistantOpen] = useState(false);
+  const { signOut } = useAuth();
 
   const toggleVoiceAssistant = () => {
     setIsVoiceAssistantOpen(!isVoiceAssistantOpen);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
   };
 
   return (
@@ -75,16 +81,16 @@ const Layout = ({ children }: LayoutProps) => {
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CP</AvatarFallback>
+                <AvatarFallback>VP</AvatarFallback>
               </Avatar>
               <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-sm font-medium truncate">Dr. Claire Peterson</span>
+                <span className="text-sm font-medium truncate">Dr. Vikram Patel</span>
                 <span className="text-xs text-muted-foreground truncate">Computer Science</span>
               </div>
               <Button variant="ghost" size="icon" className="ml-auto text-muted-foreground">
                 <Settings className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" className="text-muted-foreground">
+              <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={handleLogout}>
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -94,7 +100,6 @@ const Layout = ({ children }: LayoutProps) => {
         <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
           <header className="h-16 border-b border-border/40 flex items-center justify-between px-6">
             <div className="flex items-center">
-              {/* Fix the issue with SidebarTrigger by removing asChild prop */}
               <SidebarTrigger
                 variant="ghost" 
                 size="icon" 
