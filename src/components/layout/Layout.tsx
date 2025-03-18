@@ -47,8 +47,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <SidebarHeader>
             <div className="p-2 font-bold">Masterplan Dashboard</div>
           </SidebarHeader>
-          <SidebarContent></SidebarContent>
-          <SidebarFooter></SidebarFooter>
+          <SidebarContent />
+          <SidebarFooter />
         </Sidebar>
         
         <div className="flex-1 flex flex-col overflow-hidden">
