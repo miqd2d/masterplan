@@ -7,13 +7,17 @@ import {
   SidebarProvider,
   SidebarContent,
   SidebarHeader,
-  SidebarFooter
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
 } from '@/components/ui/sidebar';
 import TopNav from './TopNav';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { PanelLeft, Wand2 } from 'lucide-react';
+import { PanelLeft, Wand2, LayoutDashboard, Users, BookOpen, CheckSquare } from 'lucide-react';
 import AIAssistant from '../ai-assistant/AIAssistant';
+import { Link } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -40,6 +44,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     setAiAssistantOpen(!aiAssistantOpen);
   };
 
+  // Navigation menu items
+  const menuItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+    { icon: Users, label: 'Students', path: '/students' },
+    { icon: BookOpen, label: 'Lessons', path: '/lessons' },
+    { icon: CheckSquare, label: 'Assignments', path: '/assignments' },
+  ];
+
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex h-screen overflow-hidden">
@@ -47,7 +59,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <SidebarHeader>
             <div className="p-2 font-bold">Masterplan Dashboard</div>
           </SidebarHeader>
-          <SidebarContent />
+          <SidebarContent>
+            <SidebarMenu>
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.path}>
+                  <SidebarMenuButton asChild tooltip={item.label}>
+                    <Link to={item.path} className="flex items-center gap-2">
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarContent>
           <SidebarFooter />
         </Sidebar>
         

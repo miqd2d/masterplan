@@ -4,6 +4,7 @@ import Dashboard from '@/components/dashboard/Dashboard';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Layout from '@/components/layout/Layout';
 
 const DashboardPage = () => {
   const { toast } = useToast();
@@ -23,7 +24,7 @@ const DashboardPage = () => {
   }, []);
   
   return (
-    <>
+    <Layout>
       <div className="mb-4 px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-md flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-yellow-500" />
         <p className="text-sm text-yellow-700">Please set the OPENAI_API_KEY in your Supabase project secrets for the AI assistant to work fully.</p>
@@ -32,7 +33,7 @@ const DashboardPage = () => {
         </Button>
       </div>
       <Dashboard />
-    </>
+    </Layout>
   );
 };
 
