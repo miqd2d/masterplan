@@ -2,20 +2,13 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-export interface ProgressChartProps {
-  data?: Array<{
+interface ProgressChartProps {
+  data: Array<{
     name: string;
     completed: number;
     remaining: number;
   }>;
 }
-
-const DEFAULT_DATA = [
-  { name: 'Math', completed: 60, remaining: 40 },
-  { name: 'Science', completed: 80, remaining: 20 },
-  { name: 'History', completed: 45, remaining: 55 },
-  { name: 'Language', completed: 75, remaining: 25 },
-];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -31,7 +24,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const ProgressChart = ({ data = DEFAULT_DATA }: ProgressChartProps) => {
+const ProgressChart = ({ data }: ProgressChartProps) => {
   return (
     <div className="h-[250px] w-full">
       <ResponsiveContainer width="100%" height="100%">

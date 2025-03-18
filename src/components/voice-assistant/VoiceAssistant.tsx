@@ -25,11 +25,7 @@ const SUGGESTIONS = [
   "Email reminders to students missing assignments",
   "Generate quiz questions for next class",
   "Summarize today's student feedback",
-  "Tell me which lessons I'm behind on",
-  "Show students with marks below 60%",
-  "List all students with excellent performance",
-  "Which assignments have low submission rates?",
-  "What is the average class attendance this month?"
+  "Tell me which lessons I'm behind on"
 ];
 
 const VoiceAssistant = ({ onClose }: VoiceAssistantProps) => {
@@ -189,7 +185,7 @@ const VoiceAssistant = ({ onClose }: VoiceAssistantProps) => {
             </div>
             
             <div className="p-4 border-t border-border/40 space-y-4">
-              <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-2">
+              <div className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map((suggestion, index) => (
                   <AnimatedChip 
                     key={index} 

@@ -157,8 +157,8 @@ export default {
 				'inner-glass': 'inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
 			},
 			fontFamily: {
-				sans: ['Poppins', 'sans-serif'],
-				mono: ['Poppins', 'sans-serif'],
+				sans: ['Inter', 'sans-serif'],
+				mono: ['JetBrains Mono', 'monospace'],
 			},
 		}
 	},
