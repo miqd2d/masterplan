@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -63,14 +63,12 @@ const Login = () => {
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <Link to="/" className="inline-block">
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <div className="bg-primary rounded-md w-10 h-10 flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-xl">M</span>
-                </div>
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <div className="bg-primary rounded-md w-10 h-10 flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-xl">M</span>
               </div>
-            </Link>
-            <h1 className="text-3xl font-bold">{isSignUp ? 'Create an Account' : 'Welcome Back'}</h1>
+            </div>
+            <h1 className="text-3xl font-bold">{isSignUp ? 'Create an Account' : 'Welcome to Masterplan'}</h1>
             <p className="text-muted-foreground mt-2">
               {isSignUp 
                 ? 'Sign up to start managing your classroom effectively' 
@@ -108,9 +106,9 @@ const Login = () => {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
                 {!isSignUp && (
-                  <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                  <Button variant="link" className="px-0 h-auto">
                     Forgot password?
-                  </Link>
+                  </Button>
                 )}
               </div>
               <Input

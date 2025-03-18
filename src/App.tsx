@@ -8,7 +8,6 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { SecureRoute } from '@/components/auth/SecureRoute';
 
 // Lazy-loaded components for better performance
-const Index = lazy(() => import('./pages/Index'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Students = lazy(() => import('./pages/Students'));
 const Assignments = lazy(() => import('./pages/Assignments'));
@@ -37,8 +36,8 @@ function App() {
               </div>
             }>
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<Login />} />
+                <Route path="/login" element={<Navigate to="/" replace />} />
                 <Route path="/dashboard" element={
                   <SecureRoute>
                     <Dashboard />

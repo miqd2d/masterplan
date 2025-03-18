@@ -165,12 +165,12 @@ const Dashboard = () => {
                 {stats.lowAttendanceCount > 0 ? (
                   <>
                     <li className="flex justify-between">
-                      <span>Rahul Sharma</span>
-                      <span className="text-red-600">72%</span>
-                    </li>
-                    <li className="flex justify-between">
                       <span>Priya Patel</span>
                       <span className="text-red-600">65%</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Rahul Verma</span>
+                      <span className="text-red-600">72%</span>
                     </li>
                     {stats.lowAttendanceCount > 2 && (
                       <li className="text-xs text-muted-foreground">
@@ -188,7 +188,7 @@ const Dashboard = () => {
           <DashboardCard title="Top Performers" icon={<Award className="h-5 w-5" />}>
             <ul className="space-y-3">
               <li className="flex justify-between items-center">
-                <span className="text-sm">Arjun Mehta</span>
+                <span className="text-sm">Arjun Sharma</span>
                 <span className="text-xs">96% marks</span>
               </li>
               <li className="flex justify-between items-center">
@@ -196,7 +196,7 @@ const Dashboard = () => {
                 <span className="text-xs">94% marks</span>
               </li>
               <li className="flex justify-between items-center">
-                <span className="text-sm">Rajesh Kumar</span>
+                <span className="text-sm">Rajesh Khanna</span>
                 <span className="text-xs">92% marks</span>
               </li>
             </ul>

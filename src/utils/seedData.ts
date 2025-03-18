@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 // Function to seed demo data for a new user
@@ -9,8 +8,8 @@ export const seedDemoData = async (userId: string) => {
     // 1. Create Students
     const students = [
       {
-        name: 'Arjun Mehta',
-        email: 'arjun.mehta@example.com',
+        name: 'Arjun Sharma',
+        email: 'arjun.sharma@example.com',
         course_id: 'CS101',
         attendance: 96,
         marks: 96,
@@ -27,8 +26,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Rahul Sharma',
-        email: 'rahul.sharma@example.com',
+        name: 'Rahul Verma',
+        email: 'rahul.verma@example.com',
         course_id: 'CS102',
         attendance: 72,
         marks: 68,
@@ -72,8 +71,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Sneha Verma',
-        email: 'sneha.verma@example.com',
+        name: 'Sneha Malhotra',
+        email: 'sneha.malhotra@example.com',
         course_id: 'CS301',
         attendance: 89,
         marks: 82,
@@ -81,8 +80,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Rajesh Kumar',
-        email: 'rajesh.kumar@example.com',
+        name: 'Rajesh Khanna',
+        email: 'rajesh.khanna@example.com',
         course_id: 'CS202',
         attendance: 92,
         marks: 92,
@@ -117,8 +116,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Sunil Sharma',
-        email: 'sunil.sharma@example.com',
+        name: 'Sunil Agarwal',
+        email: 'sunil.agarwal@example.com',
         course_id: 'CS302',
         attendance: 73,
         marks: 65,
@@ -126,8 +125,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Divya Malhotra',
-        email: 'divya.malhotra@example.com',
+        name: 'Divya Choudhary',
+        email: 'divya.choudhary@example.com',
         course_id: 'CS101',
         attendance: 84,
         marks: 81,

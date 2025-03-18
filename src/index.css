@@ -53,10 +53,13 @@
     @apply border-border;
   }
 
+  html, body, h1, h2, h3, h4, h5, h6, p, span, div, button, input, textarea, select {
+    font-family: 'Poppins', sans-serif !important;
+  }
+
   html, body {
     @apply h-full bg-background text-foreground antialiased;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
-    font-family: 'Poppins', sans-serif;
   }
 
   body {
