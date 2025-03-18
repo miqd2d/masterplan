@@ -65,7 +65,7 @@ const Dashboard = () => {
         
         // Calculate stats
         const lowAttendanceStudents = students.filter(s => s.attendance < 75);
-        const lowMarksStudents = students.filter(s => s.marks < 60);
+        const lowMarksStudents = students.filter(s => (s.marks || 0) < 60);
         const activeAssignments = assignments.filter(a => a.status === 'Active');
         
         setStats({

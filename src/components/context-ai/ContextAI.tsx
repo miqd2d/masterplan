@@ -171,7 +171,7 @@ const ContextAI: React.FC<ContextAIProps> = ({ placeholder = "Ask about your dat
           responseText = `There are ${atRiskStudents.length} students at risk: ${atRiskStudents.map(s => s.name).join(', ')}`;
         } else if (query.includes('marks') && query.includes('below')) {
           const threshold = parseThreshold(query) || 60;
-          const lowMarks = students.filter(s => s.marks < threshold);
+          const lowMarks = students.filter(s => (s.marks || 0) < threshold);
           responseText = `I found ${lowMarks.length} students with marks below ${threshold}%: ${lowMarks.map(s => s.name).join(', ')}`;
         } else {
           responseText = `I found ${students.length} students in your database. How would you like to analyze this data?`;

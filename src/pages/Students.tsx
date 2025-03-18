@@ -26,7 +26,7 @@ interface Student {
   course_id: string;
   attendance: number;
   performance: string;
-  marks: number;
+  marks?: number; // Now optional to handle legacy data
 }
 
 const StudentsPage = () => {
@@ -56,7 +56,7 @@ const StudentsPage = () => {
           throw error;
         }
         
-        // Add marks if not present in the database
+        // Ensure all students have a marks property (even if it's null in DB)
         const enhancedData = data?.map(student => ({
           ...student,
           marks: student.marks || Math.floor(Math.random() * 40) + 60 // Generate marks between 60-100 if not present
