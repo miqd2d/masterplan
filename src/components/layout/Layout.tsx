@@ -2,10 +2,16 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Sidebar } from '@/components/ui/sidebar';
+import { 
+  Sidebar, 
+  SidebarProvider,
+  SidebarContent,
+  SidebarHeader,
+  SidebarFooter
+} from '@/components/ui/sidebar';
 import TopNav from './TopNav';
 import { useToast } from '@/hooks/use-toast';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { PanelLeft, Wand2 } from 'lucide-react';
 import AIAssistant from '../ai-assistant/AIAssistant';
 
@@ -17,7 +23,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const { toast } = useToast();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   // Close sidebar on mobile by default
   React.useEffect(() => {
@@ -35,45 +41,55 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopNav>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden" 
-            onClick={toggleSidebar}
-          >
-            <PanelLeft className="h-5 w-5" />
-          </Button>
-          
-          <div className="ml-auto flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="flex items-center justify-center"
-              onClick={toggleAIAssistant}
-            >
-              <Wand2 className="h-5 w-5" />
-            </Button>
-          </div>
-        </TopNav>
+    <SidebarProvider defaultOpen={!isMobile} open={sidebarOpen} onOpenChange={setSidebarOpen}>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar>
+          <SidebarHeader>
+            <div className="p-2 font-bold">EduTrack Dashboard</div>
+          </SidebarHeader>
+          <SidebarContent></SidebarContent>
+          <SidebarFooter></SidebarFooter>
+        </Sidebar>
         
-        <main className="flex-1 overflow-y-auto px-4 pt-6 pb-12 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {children}
-          </motion.div>
-        </main>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="border-b">
+            <div className="flex h-16 items-center px-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="md:hidden" 
+                onClick={toggleSidebar}
+              >
+                <PanelLeft className="h-5 w-5" />
+              </Button>
+              
+              <div className="ml-auto flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="flex items-center justify-center"
+                  onClick={toggleAIAssistant}
+                >
+                  <Wand2 className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <main className="flex-1 overflow-y-auto px-4 pt-6 pb-12 md:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {children}
+            </motion.div>
+          </main>
+        </div>
+        
+        <AIAssistant isOpen={aiAssistantOpen} onClose={() => setAiAssistantOpen(false)} />
       </div>
-      
-      <AIAssistant isOpen={aiAssistantOpen} onClose={() => setAiAssistantOpen(false)} />
-    </div>
+    </SidebarProvider>
   );
 };
 

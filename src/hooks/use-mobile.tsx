@@ -19,6 +19,9 @@ export function useIsMobile() {
   return !!isMobile
 }
 
+// Export the hook with both names for backward compatibility
+export const useMobile = useIsMobile;
+
 // Add the useSidebar hook
 export function useSidebar() {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false)
