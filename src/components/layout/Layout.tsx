@@ -41,40 +41,38 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <SidebarProvider defaultOpen={!isMobile} open={sidebarOpen} onOpenChange={setSidebarOpen}>
+    <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex h-screen overflow-hidden">
         <Sidebar>
           <SidebarHeader>
-            <div className="p-2 font-bold">EduTrack Dashboard</div>
+            <div className="p-2 font-bold">Masterplan Dashboard</div>
           </SidebarHeader>
           <SidebarContent></SidebarContent>
           <SidebarFooter></SidebarFooter>
         </Sidebar>
         
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="border-b">
-            <div className="flex h-16 items-center px-4">
+          <TopNav>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden" 
+              onClick={toggleSidebar}
+            >
+              <PanelLeft className="h-5 w-5" />
+            </Button>
+            
+            <div className="ml-auto flex items-center gap-2">
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="icon" 
-                className="md:hidden" 
-                onClick={toggleSidebar}
+                className="flex items-center justify-center"
+                onClick={toggleAIAssistant}
               >
-                <PanelLeft className="h-5 w-5" />
+                <Wand2 className="h-5 w-5" />
               </Button>
-              
-              <div className="ml-auto flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="flex items-center justify-center"
-                  onClick={toggleAIAssistant}
-                >
-                  <Wand2 className="h-5 w-5" />
-                </Button>
-              </div>
             </div>
-          </div>
+          </TopNav>
           
           <main className="flex-1 overflow-y-auto px-4 pt-6 pb-12 md:px-8">
             <motion.div

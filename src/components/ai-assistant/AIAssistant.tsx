@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AIAssistantProps {
   isOpen: boolean;
@@ -24,7 +25,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hello, I'm your teaching assistant. How can I help you today?",
+      content: "Hello, I'm your teaching assistant. How can I help you today? I have access to your database and can provide insights about your students, lessons, assignments, and more.",
       sender: 'assistant',
       timestamp: new Date()
     }
@@ -120,6 +121,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
             title: "Transcription complete",
             description: "Your speech has been converted to text",
           });
+          
+          // Automatically send the transcribed message
+          handleSendMessage(undefined, data.text);
         } else {
           throw new Error('No transcription returned');
         }
@@ -131,19 +135,41 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
         description: "Failed to convert speech to text. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleSendMessage = async (e?: React.FormEvent) => {
+  const fetchDatabaseContext = async () => {
+    if (!user) return null;
+
+    try {
+      // Fetch relevant data from the database to provide context for AI
+      const [studentsResult, assignmentsResult, lessonsResult] = await Promise.all([
+        supabase.from('students').select('*').eq('user_id', user.id),
+        supabase.from('assignments').select('*').eq('user_id', user.id),
+        supabase.from('lessons').select('*').eq('user_id', user.id)
+      ]);
+
+      return {
+        students: studentsResult.data || [],
+        assignments: assignmentsResult.data || [],
+        lessons: lessonsResult.data || []
+      };
+    } catch (error) {
+      console.error('Error fetching database context:', error);
+      return null;
+    }
+  };
+
+  const handleSendMessage = async (e?: React.FormEvent, speechText?: string) => {
     if (e) e.preventDefault();
     
-    if (!inputValue.trim() || !user) return;
+    const messageText = speechText || inputValue;
+    if (!messageText.trim() || !user) return;
     
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputValue,
+      content: messageText,
       sender: 'user',
       timestamp: new Date()
     };
@@ -153,27 +179,68 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
     setIsProcessing(true);
     
     try {
-      // Simulate AI response (in a real app, this would call an API)
-      const responses = [
-        "I've found students with attendance below 75%. Would you like me to show the list or send you a report?",
-        "I've created a report with defaulters for Term 2 and can share it with you. You can access it from your Drive.",
-        "I've analyzed the assignments and it seems that the Neural Networks submission rate is lower than expected. Would you like me to send reminders to those students?",
-        "Based on the current progress, you're behind on 3 lessons in the Advanced Data Structures course. Would you like me to suggest a revised schedule?",
-        "The average marks for the last assignment is 72%. This is 8% lower than the previous assignment. Would you like to see which students need additional support?"
-      ];
+      // Fetch database context to provide to the AI
+      const dbContext = await fetchDatabaseContext();
       
-      // Simulate delay for better UX
+      if (!dbContext) {
+        throw new Error('Failed to fetch database context');
+      }
+      
+      // Call the AI function with the user message and database context
+      const { data, error } = await supabase.functions.invoke('chat-ai', {
+        body: { 
+          message: messageText,
+          context: {
+            students: dbContext.students,
+            assignments: dbContext.assignments,
+            lessons: dbContext.lessons
+          }
+        }
+      });
+      
+      if (error) {
+        throw new Error(`AI error: ${error.message}`);
+      }
+      
+      // Process AI response
+      let aiResponse = "I'm sorry, I couldn't process your request at this time.";
+      
+      if (data && data.response) {
+        aiResponse = data.response;
+      } else if (dbContext) {
+        // If AI function fails or is not yet implemented, provide a context-aware fallback response
+        const studentsCount = dbContext.students.length;
+        const lowAttendanceCount = dbContext.students.filter(s => s.attendance < 75).length;
+        const lowMarksCount = dbContext.students.filter(s => (s.marks || 0) < 60).length;
+        
+        // Create context-aware fallback responses based on the query
+        const query = messageText.toLowerCase();
+        
+        if (query.includes('attendance') || query.includes('absent')) {
+          aiResponse = `I found that ${lowAttendanceCount} out of ${studentsCount} students have attendance below 75%. Would you like me to list these students or prepare a report?`;
+        } else if (query.includes('marks') || query.includes('grade') || query.includes('performance')) {
+          aiResponse = `There are ${lowMarksCount} students with marks below 60%. Would you like me to suggest some intervention strategies?`;
+        } else if (query.includes('assignment') || query.includes('homework')) {
+          aiResponse = `You currently have ${dbContext.assignments.length} assignments in the system. The most recent ones are ${dbContext.assignments.slice(0, 3).map(a => a.title).join(", ")}.`;
+        } else if (query.includes('lesson') || query.includes('course') || query.includes('subject')) {
+          aiResponse = `You're currently teaching ${dbContext.lessons.length} lessons. The main lessons are ${dbContext.lessons.slice(0, 5).map(l => l.title).join(", ")}.`;
+        } else {
+          aiResponse = `Based on your database, you have ${studentsCount} students, ${dbContext.assignments.length} assignments, and ${dbContext.lessons.length} lessons. How can I help you analyze this information?`;
+        }
+      }
+      
+      // Add AI response message
       setTimeout(() => {
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
-          content: responses[Math.floor(Math.random() * responses.length)],
+          content: aiResponse,
           sender: 'assistant',
           timestamp: new Date()
         };
         
         setMessages(prev => [...prev, assistantMessage]);
         setIsProcessing(false);
-      }, 1500);
+      }, 500);
       
     } catch (error) {
       console.error('Error processing query:', error);
@@ -237,41 +304,43 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
                 <div className="bg-primary rounded-md w-8 h-8 flex items-center justify-center">
                   <Wand2 className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <h2 className="font-semibold">AI Assistant</h2>
+                <h2 className="font-semibold">Masterplan AI Assistant</h2>
               </div>
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                {messages.map((message) => (
                   <div
-                    className={`max-w-[80%] px-4 py-2 rounded-xl ${
-                      message.sender === 'user' 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-secondary/70 backdrop-blur-sm text-secondary-foreground'
-                    }`}
+                    key={message.id}
+                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    <div
+                      className={`max-w-[80%] px-4 py-2 rounded-xl ${
+                        message.sender === 'user' 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-secondary/70 backdrop-blur-sm text-secondary-foreground'
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-              
-              {isProcessing && (
-                <div className="flex justify-start">
-                  <div className="max-w-[80%] px-4 py-2 rounded-xl bg-secondary/70 backdrop-blur-sm">
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                ))}
+                
+                {isProcessing && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[80%] px-4 py-2 rounded-xl bg-secondary/70 backdrop-blur-sm">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    </div>
                   </div>
-                </div>
-              )}
-              
-              <div ref={messagesEndRef} />
-            </div>
+                )}
+                
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
             
             <div className="p-4 border-t border-border/40">
               <form onSubmit={handleSendMessage} className="flex items-center gap-2">
@@ -293,7 +362,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
                   <Input
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Ask me anything about your teaching data..."
+                    placeholder="Ask me anything about your data..."
                     className="pr-10 glass border-0 h-10"
                     disabled={isProcessing || isRecording}
                   />

@@ -31,7 +31,7 @@ export default function TopNav({ children }: TopNavProps) {
         
         <Link to="/" className="flex items-center gap-2">
           <span className="hidden font-bold sm:inline-block">
-            EduTrack
+            Masterplan
           </span>
         </Link>
         
