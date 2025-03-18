@@ -17,18 +17,20 @@ const metricVariants = cva('', {
   },
 });
 
-// Remove extending VariantProps since we're defining trend differently
+interface TrendData {
+  value: string | number;
+  direction: 'up' | 'down' | 'neutral';
+  label?: string;
+}
+
+// Updating the interface with the correct trend type
 interface DashboardMetricProps {
   title: string;
   value: string | number;
   metricClassName?: string;
   subtitle?: string;
   icon?: React.ReactNode;
-  trend?: {
-    value: string | number;
-    direction: 'up' | 'down' | 'neutral';
-    label?: string;
-  };
+  trend?: TrendData;
   className?: string;
 }
 

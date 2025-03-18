@@ -1,134 +1,93 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { SidebarProvider, SidebarTrigger, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent } from '@/components/ui/sidebar';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
-  LayoutDashboard, 
-  Users, 
-  BookOpen, 
-  ClipboardCheck, 
-  Bell, 
-  Settings, 
-  LogOut,
-  Menu,
-  MicIcon
-} from 'lucide-react';
-import VoiceAssistant from '../voice-assistant/VoiceAssistant';
+  Sidebar, 
+  SidebarProvider,
+  SidebarContent,
+  SidebarHeader,
+  SidebarFooter
+} from '@/components/ui/sidebar';
+import TopNav from './TopNav';
+import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { PanelLeft, Wand2 } from 'lucide-react';
+import AIAssistant from '../ai-assistant/AIAssistant';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: Users, label: "Students", path: "/students" },
-  { icon: BookOpen, label: "Lessons", path: "/lessons" },
-  { icon: ClipboardCheck, label: "Assignments", path: "/assignments" },
-];
-
-const Layout = ({ children }: LayoutProps) => {
-  const location = useLocation();
-  const [isVoiceAssistantOpen, setIsVoiceAssistantOpen] = useState(false);
-
-  const toggleVoiceAssistant = () => {
-    setIsVoiceAssistantOpen(!isVoiceAssistantOpen);
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
+  
+  // Close sidebar on mobile by default
+  React.useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile]);
+  
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+  
+  const toggleAIAssistant = () => {
+    setAiAssistantOpen(!aiAssistantOpen);
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-background to-secondary/30">
-        <Sidebar className="border-r border-border/40">
-          <div className="flex h-16 items-center px-4 border-b border-border/40">
-            <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="bg-primary rounded-md w-8 h-8 flex items-center justify-center">
-                <span className="text-primary-foreground font-bold">M</span>
-              </div>
-              <span className="font-semibold">Masterplan</span>
-            </Link>
-          </div>
-          <SidebarContent className="px-2 py-4">
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <nav className="space-y-1.5">
-                  {navItems.map((item) => (
-                    <Link key={item.path} to={item.path}>
-                      <Button
-                        variant={location.pathname === item.path ? "secondary" : "ghost"}
-                        className={`w-full justify-start gap-2 ${
-                          location.pathname === item.path
-                            ? "bg-secondary/60"
-                            : "hover:bg-secondary/40"
-                        }`}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </Button>
-                    </Link>
-                  ))}
-                </nav>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-          <div className="mt-auto p-4 border-t border-border/40">
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CP</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-sm font-medium truncate">Dr. Claire Peterson</span>
-                <span className="text-xs text-muted-foreground truncate">Computer Science</span>
-              </div>
-              <Button variant="ghost" size="icon" className="ml-auto text-muted-foreground">
-                <Settings className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-muted-foreground">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+    <SidebarProvider defaultOpen={!isMobile} open={sidebarOpen} onOpenChange={setSidebarOpen}>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar>
+          <SidebarHeader>
+            <div className="p-2 font-bold">EduTrack Dashboard</div>
+          </SidebarHeader>
+          <SidebarContent></SidebarContent>
+          <SidebarFooter></SidebarFooter>
         </Sidebar>
         
-        <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-          <header className="h-16 border-b border-border/40 flex items-center justify-between px-6">
-            <div className="flex items-center">
-              {/* Fix the issue with SidebarTrigger by removing asChild prop */}
-              <SidebarTrigger
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="border-b">
+            <div className="flex h-16 items-center px-4">
+              <Button 
                 variant="ghost" 
                 size="icon" 
-                className="mr-4 md:hidden"
+                className="md:hidden" 
+                onClick={toggleSidebar}
               >
-                <Menu className="h-5 w-5" />
-              </SidebarTrigger>
-              <h1 className="text-xl font-semibold">{
-                navItems.find(item => item.path === location.pathname)?.label || "Masterplan"
-              }</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                className="glass glass-hover border-0" 
-                size="icon"
-                onClick={toggleVoiceAssistant}
-              >
-                <MicIcon className="h-4 w-4" />
+                <PanelLeft className="h-5 w-5" />
               </Button>
-              <Button variant="outline" className="glass glass-hover border-0" size="icon">
-                <Bell className="h-4 w-4" />
-              </Button>
+              
+              <div className="ml-auto flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="flex items-center justify-center"
+                  onClick={toggleAIAssistant}
+                >
+                  <Wand2 className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
-          </header>
+          </div>
           
-          <main className="flex-1 overflow-y-auto px-6 py-6">
-            {children}
+          <main className="flex-1 overflow-y-auto px-4 pt-6 pb-12 md:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {children}
+            </motion.div>
           </main>
-          
-          {isVoiceAssistantOpen && (
-            <VoiceAssistant onClose={toggleVoiceAssistant} />
-          )}
         </div>
+        
+        <AIAssistant isOpen={aiAssistantOpen} onClose={() => setAiAssistantOpen(false)} />
       </div>
     </SidebarProvider>
   );

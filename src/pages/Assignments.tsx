@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,62 +7,72 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, CheckCircle, Clock, Download, Filter, Plus, Search, XCircle } from 'lucide-react';
 import GlassmorphismCard from '@/components/ui-custom/GlassmorphismCard';
 import AnimatedChip from '@/components/ui-custom/AnimatedChip';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
-// Mock assignment data
-const assignments = [
-  {
-    id: 1,
-    title: 'Assignment 1: Introduction to Programming Concepts',
-    course: 'CS101',
-    dueDate: '2023-05-10',
-    status: 'Completed',
-    submissionRate: 95,
-    averageScore: 85,
-    description: 'Basic programming concepts and simple algorithms implementation.',
-  },
-  {
-    id: 2,
-    title: 'Assignment 2: Data Types and Functions',
-    course: 'CS101',
-    dueDate: '2023-05-20',
-    status: 'Active',
-    submissionRate: 60,
-    averageScore: 78,
-    description: 'Implementation of various data types and custom functions.',
-  },
-  {
-    id: 3,
-    title: 'Assignment 3: Algorithm Analysis',
-    course: 'CS201',
-    dueDate: '2023-05-15',
-    status: 'Active',
-    submissionRate: 45,
-    averageScore: 72,
-    description: 'Analysis of algorithm efficiency and big-O notation.',
-  },
-  {
-    id: 4,
-    title: 'Lab Report: Binary Trees',
-    course: 'CS301',
-    dueDate: '2023-05-17',
-    status: 'Active',
-    submissionRate: 30,
-    averageScore: 68,
-    description: 'Implementation and analysis of binary tree data structures.',
-  },
-  {
-    id: 5,
-    title: 'Final Project: Database Design',
-    course: 'CS101',
-    dueDate: '2023-05-30',
-    status: 'Upcoming',
-    submissionRate: 0,
-    averageScore: 0,
-    description: 'Design and implementation of a relational database system.',
-  },
-];
+// Define the assignment type
+interface Assignment {
+  id: string;
+  title: string;
+  course: string;
+  due_date: string;
+  status: string;
+  submission_rate: number;
+  average_score: number;
+  description: string;
+}
 
 const AssignmentsPage = () => {
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('active');
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchAssignments() {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('assignments')
+          .select('*')
+          .eq('user_id', user.id);
+          
+        if (error) {
+          throw error;
+        }
+        
+        setAssignments(data || []);
+      } catch (error) {
+        console.error('Error fetching assignments:', error);
+        toast({
+          title: 'Error fetching assignments',
+          description: 'There was a problem loading your assignments.',
+          variant: 'destructive'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchAssignments();
+  }, [user, toast]);
+
+  // Filter assignments based on search query and active tab
+  const filteredAssignments = assignments
+    .filter(assignment => 
+      assignment.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      assignment.course.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .filter(assignment => {
+      if (activeTab === 'all') return true;
+      return assignment.status?.toLowerCase() === activeTab.toLowerCase();
+    });
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -70,7 +80,12 @@ const AssignmentsPage = () => {
           <div className="flex gap-2 flex-1">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search assignments..." className="pl-9 glass border-0" />
+              <Input 
+                placeholder="Search assignments..." 
+                className="pl-9 glass border-0"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
             <Button variant="outline" className="glass border-0">
               <Filter className="h-4 w-4 mr-2" />
@@ -89,7 +104,7 @@ const AssignmentsPage = () => {
           </div>
         </div>
         
-        <Tabs defaultValue="active" className="w-full">
+        <Tabs defaultValue="active" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="glass mb-6">
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
@@ -97,35 +112,29 @@ const AssignmentsPage = () => {
             <TabsTrigger value="all">All</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="active" className="space-y-6">
-            {assignments
-              .filter(assignment => assignment.status === 'Active')
-              .map(assignment => (
-                <AssignmentCard key={assignment.id} assignment={assignment} />
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            </div>
+          ) : (
+            <>
+              {['active', 'completed', 'upcoming', 'all'].map((tab) => (
+                <TabsContent key={tab} value={tab} className="space-y-6">
+                  {filteredAssignments.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">
+                        {searchQuery ? 'No assignments matching your search.' : `No ${tab !== 'all' ? tab : ''} assignments found.`}
+                      </p>
+                    </div>
+                  ) : (
+                    filteredAssignments.map(assignment => (
+                      <AssignmentCard key={assignment.id} assignment={assignment} />
+                    ))
+                  )}
+                </TabsContent>
               ))}
-          </TabsContent>
-          
-          <TabsContent value="completed" className="space-y-6">
-            {assignments
-              .filter(assignment => assignment.status === 'Completed')
-              .map(assignment => (
-                <AssignmentCard key={assignment.id} assignment={assignment} />
-              ))}
-          </TabsContent>
-          
-          <TabsContent value="upcoming" className="space-y-6">
-            {assignments
-              .filter(assignment => assignment.status === 'Upcoming')
-              .map(assignment => (
-                <AssignmentCard key={assignment.id} assignment={assignment} />
-              ))}
-          </TabsContent>
-          
-          <TabsContent value="all" className="space-y-6">
-            {assignments.map(assignment => (
-              <AssignmentCard key={assignment.id} assignment={assignment} />
-            ))}
-          </TabsContent>
+            </>
+          )}
         </Tabs>
       </div>
     </Layout>
@@ -133,16 +142,7 @@ const AssignmentsPage = () => {
 };
 
 interface AssignmentCardProps {
-  assignment: {
-    id: number;
-    title: string;
-    course: string;
-    dueDate: string;
-    status: string;
-    submissionRate: number;
-    averageScore: number;
-    description: string;
-  };
+  assignment: Assignment;
 }
 
 const AssignmentCard = ({ assignment }: AssignmentCardProps) => {
@@ -187,7 +187,7 @@ const AssignmentCard = ({ assignment }: AssignmentCardProps) => {
             <h4 className="text-sm font-medium mb-1">Due Date</h4>
             <div className="flex items-center">
               <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-              <span>{assignment.dueDate}</span>
+              <span>{assignment.due_date}</span>
             </div>
           </div>
           
@@ -195,11 +195,11 @@ const AssignmentCard = ({ assignment }: AssignmentCardProps) => {
             <h4 className="text-sm font-medium mb-1">Submission Rate</h4>
             <div className="flex items-center">
               <span className={
-                assignment.submissionRate > 80 ? 'text-green-600' :
-                assignment.submissionRate > 50 ? 'text-amber-600' :
+                assignment.submission_rate > 80 ? 'text-green-600' :
+                assignment.submission_rate > 50 ? 'text-amber-600' :
                 'text-red-600'
               }>
-                {assignment.submissionRate}%
+                {assignment.submission_rate}%
               </span>
               <span className="text-muted-foreground ml-2">of students</span>
             </div>
@@ -209,13 +209,13 @@ const AssignmentCard = ({ assignment }: AssignmentCardProps) => {
             <h4 className="text-sm font-medium mb-1">Average Score</h4>
             <div className="flex items-center">
               <span className={
-                assignment.averageScore > 80 ? 'text-green-600' :
-                assignment.averageScore > 65 ? 'text-amber-600' :
+                assignment.average_score > 80 ? 'text-green-600' :
+                assignment.average_score > 65 ? 'text-amber-600' :
                 'text-red-600'
               }>
-                {assignment.averageScore > 0 ? assignment.averageScore : 'N/A'}
+                {assignment.average_score > 0 ? assignment.average_score : 'N/A'}
               </span>
-              {assignment.averageScore > 0 && (
+              {assignment.average_score > 0 && (
                 <span className="text-muted-foreground ml-2">out of 100</span>
               )}
             </div>
@@ -229,7 +229,7 @@ const AssignmentCard = ({ assignment }: AssignmentCardProps) => {
               <div>
                 <h4 className="font-medium">Missing Submissions</h4>
                 <p className="text-sm mt-1">
-                  {100 - assignment.submissionRate}% of students haven't submitted yet.
+                  {100 - assignment.submission_rate}% of students haven't submitted yet.
                   Consider sending a reminder.
                 </p>
                 <Button size="sm" variant="outline" className="mt-2 bg-white/50">
