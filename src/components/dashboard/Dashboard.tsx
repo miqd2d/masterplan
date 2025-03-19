@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { seedDemoData } from '@/utils/seedData';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,9 +5,8 @@ import AttendanceChart from './AttendanceChart';
 import ProgressChart from './ProgressChart';
 import DashboardCard from './DashboardCard';
 import DashboardMetric from './DashboardMetric';
-import ContextAI from '@/components/context-ai/ContextAI';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, FileText, Users, FolderKanban, GraduationCap, AlertTriangle, Award, Clock, Plus } from 'lucide-react';
+import { Calendar, FileText, Users, FolderKanban, GraduationCap, AlertTriangle, Award, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
@@ -31,7 +29,6 @@ const Dashboard = () => {
       try {
         setIsLoading(true);
         
-        // Check if data exists
         const { data: existingStudents, error: checkError } = await supabase
           .from('students')
           .select('id')
@@ -42,7 +39,6 @@ const Dashboard = () => {
           console.error('Error checking for existing data:', checkError);
         }
         
-        // If no data exists, seed demo data
         if (!existingStudents || existingStudents.length === 0) {
           console.log('No existing data found, seeding demo data...');
           await seedDemoData(user.id);
@@ -51,7 +47,6 @@ const Dashboard = () => {
           console.log('Existing data found, skipping seed');
         }
         
-        // Fetch stats
         const [studentsResult, assignmentsResult, lessonsResult] = await Promise.all([
           supabase.from('students').select('*').eq('user_id', user.id),
           supabase.from('assignments').select('*').eq('user_id', user.id),
@@ -62,7 +57,6 @@ const Dashboard = () => {
         const assignments = assignmentsResult.data || [];
         const lessons = lessonsResult.data || [];
         
-        // Calculate stats with unique students
         const lowAttendanceStudents = students.filter(s => s.attendance < 75);
         const lowMarksStudents = students.filter(s => (s.marks || 0) < 60);
         const activeAssignments = assignments.filter(a => a.status === 'Active');
@@ -104,7 +98,7 @@ const Dashboard = () => {
         </Button>
       </header>
     
-      <section className="metrics-grid">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <DashboardMetric 
           title="Total Students" 
           value={stats.totalStudents} 
@@ -131,12 +125,12 @@ const Dashboard = () => {
         />
       </section>
       
-      <section className="charts-grid mt-8">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
         <ProgressChart />
         <AttendanceChart />
       </section>
       
-      <section className="cards-grid mt-8">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
         <DashboardCard title="Upcoming Deadlines" icon={<Calendar className="h-5 w-5" />}>
           <ul className="space-y-4">
             <li className="flex justify-between items-center">
@@ -194,14 +188,6 @@ const Dashboard = () => {
               <span className="text-xs">92% marks</span>
             </li>
           </ul>
-        </DashboardCard>
-      </section>
-      
-      <section className="mt-8">
-        <DashboardCard title="AI Assistant" icon={<Clock className="h-5 w-5" />} className="h-[300px]">
-          <div className="h-full">
-            <ContextAI placeholder="Ask about your teaching data..." />
-          </div>
         </DashboardCard>
       </section>
     </div>

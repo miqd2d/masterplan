@@ -41,20 +41,24 @@ serve(async (req) => {
       throw new Error('No message provided');
     }
 
+    console.log('Received message:', message);
+    console.log('Context summary:', {
+      studentsCount: context.students?.length || 0,
+      assignmentsCount: context.assignments?.length || 0,
+      lessonsCount: context.lessons?.length || 0,
+    });
+
     // Format the database context for better prompting
-    const studentsContext = context.students.length > 0 
-      ? `- ${context.students.length} students in total
-${context.students.slice(0, 5).map(s => `  - ${s.name}: Attendance ${s.attendance}%, Marks ${s.marks || 'Not available'}`).join('\n')}`
+    const studentsContext = context.students && context.students.length > 0 
+      ? `- ${context.students.length} students in total\n${context.students.slice(0, 5).map(s => `  - ${s.name}: Attendance ${s.attendance}%, Marks ${s.marks || 'Not available'}`).join('\n')}`
       : '- No students data available';
 
-    const assignmentsContext = context.assignments.length > 0
-      ? `- ${context.assignments.length} assignments in total
-${context.assignments.slice(0, 5).map(a => `  - ${a.title}: ${a.status}`).join('\n')}`
+    const assignmentsContext = context.assignments && context.assignments.length > 0
+      ? `- ${context.assignments.length} assignments in total\n${context.assignments.slice(0, 5).map(a => `  - ${a.title}: ${a.status}`).join('\n')}`
       : '- No assignments data available';
 
-    const lessonsContext = context.lessons.length > 0
-      ? `- ${context.lessons.length} lessons in total
-${context.lessons.map(l => `  - ${l.title}`).join('\n')}`
+    const lessonsContext = context.lessons && context.lessons.length > 0
+      ? `- ${context.lessons.length} lessons in total\n${context.lessons.map(l => `  - ${l.title}`).join('\n')}`
       : '- No lessons data available';
 
     // Create the system prompt with database context
@@ -73,6 +77,8 @@ ${lessonsContext}
 Use this information to provide helpful insights and answer questions about the teacher's class data.
 Be precise and helpful. If asked for statistics or data that isn't directly provided, you can make reasonable inferences based on the data you have.
 When making such inferences, be transparent about it. If you don't have enough information to answer a question, say so.`;
+
+    console.log('Calling OpenAI API...');
 
     // Call OpenAI API for completion
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -94,10 +100,12 @@ When making such inferences, be transparent about it. If you don't have enough i
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
       throw new Error(`OpenAI API error: ${errorData.error?.message || response.statusText}`);
     }
 
     const result = await response.json();
+    console.log('OpenAI response received successfully');
     const aiResponse = result.choices[0].message.content;
 
     return new Response(
@@ -107,7 +115,7 @@ When making such inferences, be transparent about it. If you don't have enough i
       {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
+          ...corsHeaders,
         },
       },
     );
@@ -123,7 +131,7 @@ When making such inferences, be transparent about it. If you don't have enough i
         status: 500,
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
+          ...corsHeaders,
         },
       },
     );

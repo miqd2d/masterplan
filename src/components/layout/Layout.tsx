@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { 
@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/sidebar';
 import TopNav from './TopNav';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { PanelLeft, Wand2, LayoutDashboard, Users, BookOpen, CheckSquare } from 'lucide-react';
+import { Wand2, LayoutDashboard, Users, BookOpen, CheckSquare } from 'lucide-react';
 import AIAssistant from '../ai-assistant/AIAssistant';
 import { Link } from 'react-router-dom';
 
@@ -40,7 +40,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden bg-background">
         <Sidebar className="z-30 border-r border-border shadow-sm">
           <SidebarHeader>
             <div className="p-4 font-bold text-xl">Masterplan</div>
@@ -62,7 +62,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <SidebarFooter />
         </Sidebar>
         
-        <div className="flex-1 flex flex-col overflow-hidden bg-background">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <TopNav>
             <div className="ml-auto flex items-center gap-2">
               <Button 

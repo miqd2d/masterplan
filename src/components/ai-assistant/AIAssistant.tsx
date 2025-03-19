@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Mic, MicOff, SendIcon, Loader2, Wand2 } from 'lucide-react';
@@ -149,6 +150,12 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
         supabase.from('lessons').select('*').eq('user_id', user.id)
       ]);
 
+      console.log('Fetched database context:', {
+        students: studentsResult.data?.length || 0,
+        assignments: assignmentsResult.data?.length || 0,
+        lessons: lessonsResult.data?.length || 0
+      });
+
       return {
         students: studentsResult.data || [],
         assignments: assignmentsResult.data || [],
@@ -180,6 +187,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
     try {
       // Fetch database context to provide to the AI
       const dbContext = await fetchDatabaseContext();
+      console.log('Sending request to AI with context...');
       
       // Call the AI function with the user message and database context
       const { data, error } = await supabase.functions.invoke('chat-ai', {
@@ -194,8 +202,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
       });
       
       if (error) {
+        console.error('Supabase function error:', error);
         throw new Error(`AI error: ${error.message}`);
       }
+      
+      console.log('AI response received');
       
       // Process AI response
       let aiResponse = "I'm sorry, I couldn't process your request at this time.";
@@ -221,7 +232,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
       console.error('Error processing query:', error);
       toast({
         title: 'Error processing your request',
-        description: 'There was a problem analyzing your data.',
+        description: 'There was a problem analyzing your data. Please try again later.',
         variant: 'destructive'
       });
       setIsProcessing(false);
@@ -240,7 +251,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 no-blur modal-container">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <motion.div 
         className="relative w-full h-[90vh] max-w-4xl mx-4"
         initial={{ opacity: 0, scale: 0.95 }}

@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import GlassmorphismCard from '../ui-custom/GlassmorphismCard';
 import AnimatedChip from '../ui-custom/AnimatedChip';
 
 interface DashboardCardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -28,7 +27,7 @@ const DashboardCard = ({
 }: DashboardCardProps) => {
   return (
     <div 
-      className={cn("bg-white rounded-lg border border-border/30 shadow-sm overflow-hidden h-full", className)} 
+      className={cn("bg-white rounded-lg border border-border/30 shadow-sm overflow-hidden h-full flex flex-col", className)} 
       {...props}
     >
       <div className="px-5 py-4 border-b border-border/10">
@@ -52,7 +51,7 @@ const DashboardCard = ({
         )}
       </div>
       
-      <div className="p-5">
+      <div className="flex-1 p-5 overflow-auto">
         {children}
       </div>
       
