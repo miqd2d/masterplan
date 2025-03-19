@@ -23,7 +23,6 @@ interface TrendData {
   label?: string;
 }
 
-// Updating the interface with the correct trend type
 interface DashboardMetricProps {
   title: string;
   value: string | number;
@@ -44,34 +43,35 @@ const DashboardMetric = ({
   className,
 }: DashboardMetricProps) => {
   return (
-    <div className={cn('flex flex-col', className)}>
-      <div className="flex items-center justify-between mb-2">
+    <div className={cn('bg-white rounded-lg p-6 shadow-sm border border-border/30', className)}>
+      <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-medium text-muted-foreground">{title}</span>
         {icon && <div className="text-muted-foreground">{icon}</div>}
       </div>
       
-      <div className="flex items-baseline gap-2">
-        <span className={cn("text-3xl font-semibold", metricClassName)}>
+      <div className="flex flex-col">
+        <span className={cn("text-4xl font-bold", metricClassName)}>
           {value}
         </span>
         
         {trend && (
-          <AnimatedChip
-            color={
-              trend.direction === 'up' 
-                ? 'success' 
-                : trend.direction === 'down' 
-                ? 'danger' 
-                : 'default'
-            }
-            className={cn(
-              'ml-1',
-              metricVariants({ trend: trend.direction })
-            )}
-          >
-            {trend.direction === 'up' ? '↑' : trend.direction === 'down' ? '↓' : '→'} {trend.value}
-            {trend.label && ` ${trend.label}`}
-          </AnimatedChip>
+          <div className="mt-2">
+            <AnimatedChip
+              color={
+                trend.direction === 'up' 
+                  ? 'success' 
+                  : trend.direction === 'down' 
+                  ? 'danger' 
+                  : 'default'
+              }
+              className={cn(
+                metricVariants({ trend: trend.direction })
+              )}
+            >
+              {trend.direction === 'up' ? '↑' : trend.direction === 'down' ? '↓' : '→'} {trend.value}
+              {trend.label && ` ${trend.label}`}
+            </AnimatedChip>
+          </div>
         )}
       </div>
       

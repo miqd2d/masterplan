@@ -240,12 +240,16 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div 
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 no-blur modal-container">
+      <motion.div 
         className="relative w-full h-[90vh] max-w-4xl mx-4"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.2 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="overflow-hidden flex flex-col h-full rounded-xl bg-white/95 shadow-lg border border-border/30">
+        <div className="overflow-hidden flex flex-col h-full rounded-xl bg-white shadow-lg border border-border/30">
           <div className="flex items-center justify-between px-6 py-4 border-b">
             <div className="flex items-center gap-2">
               <div className="bg-primary rounded-md w-8 h-8 flex items-center justify-center">
@@ -290,41 +294,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
           </ScrollArea>
           
           <div className="p-4 border-t">
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              if (inputValue.trim()) {
-                // Mock AI response for demo purposes
-                const userMessage: Message = {
-                  id: Date.now().toString(),
-                  content: inputValue,
-                  sender: 'user',
-                  timestamp: new Date()
-                };
-                
-                setMessages(prev => [...prev, userMessage]);
-                setInputValue('');
-                setIsProcessing(true);
-                
-                // Simulate AI response
-                setTimeout(() => {
-                  const assistantMessage: Message = {
-                    id: (Date.now() + 1).toString(),
-                    content: "I understand your question. Based on the data, I can provide insights on this topic. Would you like me to analyze this further?",
-                    sender: 'assistant',
-                    timestamp: new Date()
-                  };
-                  
-                  setMessages(prev => [...prev, assistantMessage]);
-                  setIsProcessing(false);
-                }, 1000);
-              }
-            }} className="flex items-center gap-2">
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
               <Button
                 type="button"
                 variant={isRecording ? "destructive" : "outline"}
                 size="icon"
                 className="flex-shrink-0 h-10 w-10"
-                onClick={() => setIsRecording(!isRecording)}
+                onClick={isRecording ? stopRecording : startRecording}
                 disabled={isProcessing}
               >
                 {isRecording ? 
@@ -354,7 +330,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
             </form>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

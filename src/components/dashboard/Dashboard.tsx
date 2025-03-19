@@ -95,16 +95,16 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="grid gap-8">
-      <section className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Overview</h2>
-        <Button>
+    <div className="dashboard-container">
+      <header className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Overview</h1>
+        <Button className="bg-primary hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-2" />
           Add Student
         </Button>
-      </section>
+      </header>
     
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="metrics-grid">
         <DashboardMetric 
           title="Total Students" 
           value={stats.totalStudents} 
@@ -131,12 +131,12 @@ const Dashboard = () => {
         />
       </section>
       
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <section className="charts-grid mt-8">
         <ProgressChart />
         <AttendanceChart />
       </section>
       
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section className="cards-grid mt-8">
         <DashboardCard title="Upcoming Deadlines" icon={<Calendar className="h-5 w-5" />}>
           <ul className="space-y-4">
             <li className="flex justify-between items-center">
@@ -157,27 +157,25 @@ const Dashboard = () => {
         <DashboardCard title="Attendance Alerts" icon={<AlertTriangle className="h-5 w-5" />}>
           <div className="text-sm">
             <p className="mb-3">{stats.lowAttendanceCount} students below 75% attendance</p>
-            <ul className="space-y-3">
-              {stats.lowAttendanceCount > 0 ? (
-                <>
-                  <li className="flex justify-between">
-                    <span>Priya Sharma</span>
-                    <span className="text-red-600">65%</span>
+            {stats.lowAttendanceCount > 0 ? (
+              <ul className="space-y-3">
+                <li className="flex justify-between">
+                  <span>Priya Sharma</span>
+                  <span className="text-red-600">65%</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Rahul Kumar</span>
+                  <span className="text-red-600">72%</span>
+                </li>
+                {stats.lowAttendanceCount > 2 && (
+                  <li className="text-xs text-muted-foreground">
+                    And {stats.lowAttendanceCount - 2} more students...
                   </li>
-                  <li className="flex justify-between">
-                    <span>Rahul Kumar</span>
-                    <span className="text-red-600">72%</span>
-                  </li>
-                  {stats.lowAttendanceCount > 2 && (
-                    <li className="text-xs text-muted-foreground">
-                      And {stats.lowAttendanceCount - 2} more students...
-                    </li>
-                  )}
-                </>
-              ) : (
-                <li>No students with low attendance.</li>
-              )}
-            </ul>
+                )}
+              </ul>
+            ) : (
+              <p>No students with low attendance.</p>
+            )}
           </div>
         </DashboardCard>
         
@@ -199,14 +197,12 @@ const Dashboard = () => {
         </DashboardCard>
       </section>
       
-      <section className="grid grid-cols-1 gap-6">
-        <div className="h-[400px]">
-          <DashboardCard title="AI Assistant" icon={<Clock className="h-5 w-5" />} className="h-full">
-            <div className="h-full">
-              <ContextAI placeholder="Ask about your teaching data..." />
-            </div>
-          </DashboardCard>
-        </div>
+      <section className="mt-8">
+        <DashboardCard title="AI Assistant" icon={<Clock className="h-5 w-5" />} className="h-[300px]">
+          <div className="h-full">
+            <ContextAI placeholder="Ask about your teaching data..." />
+          </div>
+        </DashboardCard>
       </section>
     </div>
   );

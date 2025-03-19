@@ -69,11 +69,11 @@
 
 @layer utilities {
   .glass {
-    @apply bg-white/50 backdrop-blur-md border border-white/20 shadow-glass;
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-sm;
   }
   
   .glass-hover {
-    @apply hover:shadow-glass-hover transition-shadow duration-300;
+    @apply hover:shadow-md transition-shadow duration-300;
   }
   
   .text-balance {
@@ -118,13 +118,6 @@ html {
   background: #9ca3af;
 }
 
-/* Prevent blur on modals */
-.modal-container {
-  transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
 /* Layout helpers */
 .page-container {
   @apply max-w-7xl mx-auto w-full;
@@ -137,4 +130,74 @@ html {
 /* Fix z-index issues */
 .fixed-layer {
   isolation: isolate;
+}
+
+/* Fix modal blur issues */
+.no-blur {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Dashboard metric cards */
+.metric-card {
+  @apply bg-white rounded-xl shadow-sm p-6 flex flex-col;
+}
+
+.metric-value {
+  @apply text-4xl font-bold mt-2;
+}
+
+.metric-label {
+  @apply text-sm text-gray-500;
+}
+
+/* Prevent content overlap */
+.content-grid {
+  @apply grid gap-6;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Fix for overlapping elements */
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Make modals appear crisp */
+.modal-container {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
 }

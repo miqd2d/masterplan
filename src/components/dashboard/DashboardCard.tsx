@@ -27,15 +27,15 @@ const DashboardCard = ({
   ...props
 }: DashboardCardProps) => {
   return (
-    <GlassmorphismCard 
-      className={cn("overflow-hidden", className)} 
+    <div 
+      className={cn("bg-white rounded-lg border border-border/30 shadow-sm overflow-hidden h-full", className)} 
       {...props}
     >
-      <div className="px-5 py-4 border-b border-border/30">
+      <div className="px-5 py-4 border-b border-border/10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {icon && (
-              <div className="text-muted-foreground">
+              <div className="text-primary/80">
                 {icon}
               </div>
             )}
@@ -57,11 +57,11 @@ const DashboardCard = ({
       </div>
       
       {footer && (
-        <div className="px-5 py-3 border-t border-border/30 bg-secondary/30">
+        <div className="px-5 py-3 border-t border-border/10 bg-secondary/30">
           {footer}
         </div>
       )}
-    </GlassmorphismCard>
+    </div>
   );
 };
 

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { 
@@ -23,22 +23,8 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const isMobile = useIsMobile();
-  
-  // Close sidebar on mobile by default
-  React.useEffect(() => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    } else {
-      setSidebarOpen(true);
-    }
-  }, [isMobile]);
-  
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
   
   const toggleAIAssistant = () => {
     setAiAssistantOpen(!aiAssistantOpen);
@@ -55,18 +41,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex h-screen overflow-hidden">
-        <Sidebar className="z-30">
+        <Sidebar className="z-30 border-r border-border shadow-sm">
           <SidebarHeader>
-            <div className="p-4 font-bold text-lg">Masterplan</div>
+            <div className="p-4 font-bold text-xl">Masterplan</div>
           </SidebarHeader>
-          <SidebarContent>
+          <SidebarContent className="py-4">
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.path}>
                   <SidebarMenuButton asChild tooltip={item.label}>
-                    <Link to={item.path} className="flex items-center gap-3 px-3 py-2">
+                    <Link to={item.path} className="flex items-center gap-3 px-6 py-3 hover:bg-secondary/50 rounded-md">
                       <item.icon className="h-5 w-5" />
-                      <span>{item.label}</span>
+                      <span className="text-base">{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -76,17 +62,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <SidebarFooter />
         </Sidebar>
         
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden bg-background">
           <TopNav>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="md:hidden" 
-              onClick={toggleSidebar}
-            >
-              <PanelLeft className="h-5 w-5" />
-            </Button>
-            
             <div className="ml-auto flex items-center gap-2">
               <Button 
                 variant="outline" 
@@ -99,7 +76,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </TopNav>
           
-          <main className="flex-1 overflow-y-auto px-4 pt-6 pb-12 md:px-8">
+          <main className="flex-1 overflow-y-auto p-6 md:p-8">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
