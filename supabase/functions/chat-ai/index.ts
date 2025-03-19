@@ -2,14 +2,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0'
 
-// Create a custom error for handling cases when API key is not set
-class ConfigurationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ConfigurationError';
-  }
-}
-
 interface ChatRequestBody {
   message: string;
   context: {
@@ -19,15 +11,17 @@ interface ChatRequestBody {
   };
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
+      headers: corsHeaders,
     });
   }
 
@@ -36,7 +30,7 @@ serve(async (req) => {
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     if (!OPENAI_API_KEY) {
-      throw new ConfigurationError('Missing OpenAI API key in environment variables');
+      throw new Error('Missing OpenAI API key in environment variables');
     }
 
     // Parse request body
@@ -119,23 +113,6 @@ When making such inferences, be transparent about it. If you don't have enough i
     );
   } catch (error) {
     console.error('Error processing chat request:', error);
-
-    // Different error handling based on error type
-    if (error instanceof ConfigurationError) {
-      return new Response(
-        JSON.stringify({
-          error: error.message,
-          hint: 'Please set the OPENAI_API_KEY environment variable in your Supabase project.',
-        }),
-        {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-          },
-        },
-      );
-    }
 
     return new Response(
       JSON.stringify({

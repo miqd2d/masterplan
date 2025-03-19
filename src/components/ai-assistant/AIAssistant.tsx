@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Mic, MicOff, SendIcon, Loader2, Wand2 } from 'lucide-react';
@@ -182,18 +181,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
       // Fetch database context to provide to the AI
       const dbContext = await fetchDatabaseContext();
       
-      if (!dbContext) {
-        throw new Error('Failed to fetch database context');
-      }
-      
       // Call the AI function with the user message and database context
       const { data, error } = await supabase.functions.invoke('chat-ai', {
         body: { 
           message: messageText,
           context: {
-            students: dbContext.students,
-            assignments: dbContext.assignments,
-            lessons: dbContext.lessons
+            students: dbContext?.students || [],
+            assignments: dbContext?.assignments || [],
+            lessons: dbContext?.lessons || []
           }
         }
       });
@@ -207,26 +202,6 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
       
       if (data && data.response) {
         aiResponse = data.response;
-      } else if (dbContext) {
-        // If AI function fails or is not yet implemented, provide a context-aware fallback response
-        const studentsCount = dbContext.students.length;
-        const lowAttendanceCount = dbContext.students.filter(s => s.attendance < 75).length;
-        const lowMarksCount = dbContext.students.filter(s => (s.marks || 0) < 60).length;
-        
-        // Create context-aware fallback responses based on the query
-        const query = messageText.toLowerCase();
-        
-        if (query.includes('attendance') || query.includes('absent')) {
-          aiResponse = `I found that ${lowAttendanceCount} out of ${studentsCount} students have attendance below 75%. Would you like me to list these students or prepare a report?`;
-        } else if (query.includes('marks') || query.includes('grade') || query.includes('performance')) {
-          aiResponse = `There are ${lowMarksCount} students with marks below 60%. Would you like me to suggest some intervention strategies?`;
-        } else if (query.includes('assignment') || query.includes('homework')) {
-          aiResponse = `You currently have ${dbContext.assignments.length} assignments in the system. The most recent ones are ${dbContext.assignments.slice(0, 3).map(a => a.title).join(", ")}.`;
-        } else if (query.includes('lesson') || query.includes('course') || query.includes('subject')) {
-          aiResponse = `You're currently teaching ${dbContext.lessons.length} lessons. The main lessons are ${dbContext.lessons.slice(0, 5).map(l => l.title).join(", ")}.`;
-        } else {
-          aiResponse = `Based on your database, you have ${studentsCount} students, ${dbContext.assignments.length} assignments, and ${dbContext.lessons.length} lessons. How can I help you analyze this information?`;
-        }
       }
       
       // Add AI response message
