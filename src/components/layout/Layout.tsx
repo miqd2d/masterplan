@@ -13,7 +13,6 @@ import {
   SidebarMenuButton
 } from '@/components/ui/sidebar';
 import TopNav from './TopNav';
-import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { PanelLeft, Wand2, LayoutDashboard, Users, BookOpen, CheckSquare } from 'lucide-react';
 import AIAssistant from '../ai-assistant/AIAssistant';
@@ -26,13 +25,14 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
-  const { toast } = useToast();
   const isMobile = useIsMobile();
   
   // Close sidebar on mobile by default
   React.useEffect(() => {
     if (isMobile) {
       setSidebarOpen(false);
+    } else {
+      setSidebarOpen(true);
     }
   }, [isMobile]);
   
@@ -55,16 +55,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex h-screen overflow-hidden">
-        <Sidebar>
+        <Sidebar className="z-30">
           <SidebarHeader>
-            <div className="p-2 font-bold">Masterplan Dashboard</div>
+            <div className="p-4 font-bold text-lg">Masterplan</div>
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.path}>
                   <SidebarMenuButton asChild tooltip={item.label}>
-                    <Link to={item.path} className="flex items-center gap-2">
+                    <Link to={item.path} className="flex items-center gap-3 px-3 py-2">
                       <item.icon className="h-5 w-5" />
                       <span>{item.label}</span>
                     </Link>
@@ -104,13 +104,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
+              className="max-w-7xl mx-auto"
             >
               {children}
             </motion.div>
           </main>
         </div>
         
-        <AIAssistant isOpen={aiAssistantOpen} onClose={() => setAiAssistantOpen(false)} />
+        {aiAssistantOpen && <AIAssistant isOpen={aiAssistantOpen} onClose={() => setAiAssistantOpen(false)} />}
       </div>
     </SidebarProvider>
   );

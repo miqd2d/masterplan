@@ -237,126 +237,125 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onClose }) => {
     };
   }, []);
 
-  // Blur the background when assistant is open
-  useEffect(() => {
-    if (isOpen) {
-      const main = document.querySelector('main');
-      if (main) {
-        main.classList.add('blur-sm', 'transition-all', 'duration-300');
-      }
-      
-      return () => {
-        if (main) {
-          main.classList.remove('blur-sm', 'transition-all', 'duration-300');
-        }
-      };
-    }
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        onClick={onClose}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div 
+        className="relative w-full h-[90vh] max-w-4xl mx-4"
+        onClick={(e) => e.stopPropagation()}
       >
-        <motion.div
-          className="relative w-full h-[90vh] max-w-4xl mx-4"
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="overflow-hidden flex flex-col h-full rounded-xl bg-white/90 backdrop-blur-md border border-white/20 shadow-glass">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border/40">
-              <div className="flex items-center gap-2">
-                <div className="bg-primary rounded-md w-8 h-8 flex items-center justify-center">
-                  <Wand2 className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <h2 className="font-semibold">Masterplan AI Assistant</h2>
+        <div className="overflow-hidden flex flex-col h-full rounded-xl bg-white/95 shadow-lg border border-border/30">
+          <div className="flex items-center justify-between px-6 py-4 border-b">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary rounded-md w-8 h-8 flex items-center justify-center">
+                <Wand2 className="h-4 w-4 text-primary-foreground" />
               </div>
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
+              <h2 className="font-semibold">AI Assistant</h2>
             </div>
-            
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[80%] px-4 py-2 rounded-xl ${
-                        message.sender === 'user' 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'bg-secondary/70 backdrop-blur-sm text-secondary-foreground'
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
-                    </div>
-                  </div>
-                ))}
-                
-                {isProcessing && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[80%] px-4 py-2 rounded-xl bg-secondary/70 backdrop-blur-sm">
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    </div>
-                  </div>
-                )}
-                
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-            
-            <div className="p-4 border-t border-border/40">
-              <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant={isRecording ? "destructive" : "outline"}
-                  size="icon"
-                  className="flex-shrink-0 h-10 w-10"
-                  onClick={isRecording ? stopRecording : startRecording}
-                  disabled={isProcessing}
-                >
-                  {isRecording ? 
-                    <MicOff className="h-5 w-5" /> : 
-                    <Mic className="h-5 w-5" />
-                  }
-                </Button>
-                
-                <div className="relative flex-1">
-                  <Input
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Ask me anything about your data..."
-                    className="pr-10 glass border-0 h-10"
-                    disabled={isProcessing || isRecording}
-                  />
-                  <Button 
-                    type="submit" 
-                    variant="ghost" 
-                    size="icon" 
-                    className="absolute right-0 top-0 h-full" 
-                    disabled={!inputValue.trim() || isProcessing || isRecording}
-                  >
-                    <SendIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-              </form>
-            </div>
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+          
+          <ScrollArea className="flex-1 p-4">
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] px-4 py-2 rounded-xl ${
+                      message.sender === 'user' 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-secondary/70 text-secondary-foreground'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                  </div>
+                </div>
+              ))}
+              
+              {isProcessing && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] px-4 py-2 rounded-xl bg-secondary/70">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  </div>
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </div>
+          </ScrollArea>
+          
+          <div className="p-4 border-t">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (inputValue.trim()) {
+                // Mock AI response for demo purposes
+                const userMessage: Message = {
+                  id: Date.now().toString(),
+                  content: inputValue,
+                  sender: 'user',
+                  timestamp: new Date()
+                };
+                
+                setMessages(prev => [...prev, userMessage]);
+                setInputValue('');
+                setIsProcessing(true);
+                
+                // Simulate AI response
+                setTimeout(() => {
+                  const assistantMessage: Message = {
+                    id: (Date.now() + 1).toString(),
+                    content: "I understand your question. Based on the data, I can provide insights on this topic. Would you like me to analyze this further?",
+                    sender: 'assistant',
+                    timestamp: new Date()
+                  };
+                  
+                  setMessages(prev => [...prev, assistantMessage]);
+                  setIsProcessing(false);
+                }, 1000);
+              }
+            }} className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant={isRecording ? "destructive" : "outline"}
+                size="icon"
+                className="flex-shrink-0 h-10 w-10"
+                onClick={() => setIsRecording(!isRecording)}
+                disabled={isProcessing}
+              >
+                {isRecording ? 
+                  <MicOff className="h-5 w-5" /> : 
+                  <Mic className="h-5 w-5" />
+                }
+              </Button>
+              
+              <div className="relative flex-1">
+                <Input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Ask me anything about your data..."
+                  className="pr-10 border h-10"
+                  disabled={isProcessing || isRecording}
+                />
+                <Button 
+                  type="submit" 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute right-0 top-0 h-full" 
+                  disabled={!inputValue.trim() || isProcessing || isRecording}
+                >
+                  <SendIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

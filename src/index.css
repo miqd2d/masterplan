@@ -79,6 +79,14 @@
   .text-balance {
     text-wrap: balance;
   }
+  
+  .content-spacing {
+    @apply p-4 md:p-6 lg:p-8;
+  }
+  
+  .grid-layout {
+    @apply grid gap-6 md:gap-8;
+  }
 }
 
 /* Smooth scrolling */
@@ -108,4 +116,25 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+
+/* Prevent blur on modals */
+.modal-container {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Layout helpers */
+.page-container {
+  @apply max-w-7xl mx-auto w-full;
+}
+
+.card-padding {
+  @apply p-4 md:p-6;
+}
+
+/* Fix z-index issues */
+.fixed-layer {
+  isolation: isolate;
 }
