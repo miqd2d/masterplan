@@ -6,7 +6,9 @@ import Layout from '@/components/layout/Layout';
 const DashboardPage = () => {
   return (
     <Layout>
-      <Dashboard />
+      <div className="p-6">
+        <Dashboard />
+      </div>
     </Layout>
   );
 };

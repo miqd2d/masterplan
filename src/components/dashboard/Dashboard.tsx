@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { seedDemoData } from '@/utils/seedData';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +22,8 @@ const Dashboard = () => {
     lowAttendanceCount: 0,
     lowMarksCount: 0,
   });
+  const [lowAttendanceStudents, setLowAttendanceStudents] = useState<any[]>([]);
+  const [topPerformers, setTopPerformers] = useState<any[]>([]);
 
   useEffect(() => {
     async function initialize() {
@@ -57,16 +60,22 @@ const Dashboard = () => {
         const assignments = assignmentsResult.data || [];
         const lessons = lessonsResult.data || [];
         
-        const lowAttendanceStudents = students.filter(s => s.attendance < 75);
+        const lowAttendance = students.filter(s => s.attendance < 75);
         const lowMarksStudents = students.filter(s => (s.marks || 0) < 60);
         const activeAssignments = assignments.filter(a => a.status === 'Active');
+        
+        // Sort students by marks to get top performers
+        const sortedByMarks = [...students].sort((a, b) => (b.marks || 0) - (a.marks || 0));
+        
+        setLowAttendanceStudents(lowAttendance);
+        setTopPerformers(sortedByMarks.slice(0, 3));
         
         setStats({
           totalStudents: students.length,
           totalAssignments: assignments.length,
           totalLessons: lessons.length,
           assignmentsThisWeek: activeAssignments.length,
-          lowAttendanceCount: lowAttendanceStudents.length,
+          lowAttendanceCount: lowAttendance.length,
           lowMarksCount: lowMarksStudents ? lowMarksStudents.length : 0,
         });
         
@@ -89,7 +98,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container max-w-full">
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Overview</h1>
         <Button className="bg-primary hover:bg-primary/90">
@@ -98,7 +107,7 @@ const Dashboard = () => {
         </Button>
       </header>
     
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <DashboardMetric 
           title="Total Students" 
           value={stats.totalStudents} 
@@ -125,12 +134,23 @@ const Dashboard = () => {
         />
       </section>
       
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        <ProgressChart />
-        <AttendanceChart />
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <DashboardCard 
+          title="Course Progress" 
+          icon={<GraduationCap className="h-5 w-5" />}
+        >
+          <ProgressChart />
+        </DashboardCard>
+        
+        <DashboardCard 
+          title="Attendance Overview" 
+          icon={<Calendar className="h-5 w-5" />}
+        >
+          <AttendanceChart />
+        </DashboardCard>
       </section>
       
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <DashboardCard title="Upcoming Deadlines" icon={<Calendar className="h-5 w-5" />}>
           <ul className="space-y-4">
             <li className="flex justify-between items-center">
@@ -153,14 +173,12 @@ const Dashboard = () => {
             <p className="mb-3">{stats.lowAttendanceCount} students below 75% attendance</p>
             {stats.lowAttendanceCount > 0 ? (
               <ul className="space-y-3">
-                <li className="flex justify-between">
-                  <span>Priya Sharma</span>
-                  <span className="text-red-600">65%</span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Rahul Kumar</span>
-                  <span className="text-red-600">72%</span>
-                </li>
+                {lowAttendanceStudents.slice(0, 2).map((student, index) => (
+                  <li key={index} className="flex justify-between">
+                    <span>{student.name}</span>
+                    <span className="text-red-600">{student.attendance}%</span>
+                  </li>
+                ))}
                 {stats.lowAttendanceCount > 2 && (
                   <li className="text-xs text-muted-foreground">
                     And {stats.lowAttendanceCount - 2} more students...
@@ -175,18 +193,12 @@ const Dashboard = () => {
         
         <DashboardCard title="Top Performers" icon={<Award className="h-5 w-5" />}>
           <ul className="space-y-4">
-            <li className="flex justify-between items-center">
-              <span className="text-sm">Arjun Mehta</span>
-              <span className="text-xs">96% marks</span>
-            </li>
-            <li className="flex justify-between items-center">
-              <span className="text-sm">Kavita Singh</span>
-              <span className="text-xs">94% marks</span>
-            </li>
-            <li className="flex justify-between items-center">
-              <span className="text-sm">Rajesh Kumar</span>
-              <span className="text-xs">92% marks</span>
-            </li>
+            {topPerformers.map((student, index) => (
+              <li key={index} className="flex justify-between items-center">
+                <span className="text-sm">{student.name}</span>
+                <span className="text-xs">{student.marks}% marks</span>
+              </li>
+            ))}
           </ul>
         </DashboardCard>
       </section>

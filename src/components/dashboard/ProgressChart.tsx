@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
 export interface ProgressChartProps {
   data?: Array<{
@@ -17,8 +18,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="glass p-2 rounded-md text-xs">
         <p className="font-medium mb-1">{label}</p>
-        <p className="text-green-600">{`Completed: ${payload[0].value}`}</p>
-        <p className="text-amber-600">{`Remaining: ${payload[1].value}`}</p>
+        <p className="text-green-600">{`Completed: ${payload[0].value}%`}</p>
+        <p className="text-amber-600">{`Remaining: ${payload[1].value}%`}</p>
       </div>
     );
   }
@@ -51,17 +52,12 @@ const ProgressChart = ({ data }: ProgressChartProps) => {
         }
         
         if (lessons && lessons.length > 0) {
-          // Transform the lessons data into chart format
           // Take up to 5 lessons to avoid cluttering the chart
           const processedData = lessons.slice(0, 5).map(lesson => {
-            // Generate random completion values for demo purposes
-            // In a real app, this would come from actual lesson completion data
-            const completedPercentage = Math.floor(Math.random() * 60) + 20; // 20-80% completed
-            
             return {
               name: lesson.title,
-              completed: completedPercentage,
-              remaining: 100 - completedPercentage
+              completed: lesson.progress || 0,
+              remaining: 100 - (lesson.progress || 0)
             };
           });
           
@@ -99,26 +95,49 @@ const ProgressChart = ({ data }: ProgressChartProps) => {
   }
 
   return (
-    <div className="h-[250px] w-full">
+    <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={displayData}
           margin={{
             top: 20,
-            right: 0,
-            left: 0,
-            bottom: 5,
+            right: 20,
+            left: 20,
+            bottom: 30,
           }}
           barGap={0}
           barCategoryGap={30}
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-          <XAxis dataKey="name" axisLine={false} tickLine={false} />
-          <YAxis axisLine={false} tickLine={false} />
+          <XAxis 
+            dataKey="name" 
+            axisLine={false} 
+            tickLine={false}
+            angle={-45}
+            textAnchor="end"
+            tick={{ fontSize: 10 }}
+            height={70}
+          />
+          <YAxis 
+            axisLine={false} 
+            tickLine={false} 
+            tick={{ fontSize: 10 }}
+            tickFormatter={(value) => `${value}%`}
+          />
           <Tooltip content={<CustomTooltip />} />
-          <Legend />
-          <Bar dataKey="completed" stackId="a" fill="rgba(34, 197, 94, 0.8)" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="remaining" stackId="a" fill="rgba(250, 204, 21, 0.5)" radius={[4, 4, 0, 0]} />
+          <Legend 
+            verticalAlign="top" 
+            height={36} 
+            iconType="circle"
+            iconSize={8}
+            formatter={(value) => (
+              <span style={{ fontSize: 12, color: value === 'completed' ? 'rgba(34, 197, 94, 0.8)' : 'rgba(250, 204, 21, 0.8)' }}>
+                {value === 'completed' ? 'Completed' : 'Remaining'}
+              </span>
+            )}
+          />
+          <Bar dataKey="completed" name="Completed" stackId="a" fill="rgba(34, 197, 94, 0.8)" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="remaining" name="Remaining" stackId="a" fill="rgba(250, 204, 21, 0.5)" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

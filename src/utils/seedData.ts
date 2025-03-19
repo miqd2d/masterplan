@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 // Function to seed demo data for a new user
@@ -5,11 +6,11 @@ export const seedDemoData = async (userId: string) => {
   console.log('Seeding demo data for user:', userId);
   
   try {
-    // 1. Create Students
+    // 1. Create Students with non-English names
     const students = [
       {
-        name: 'Arjun Sharma',
-        email: 'arjun.sharma@example.com',
+        name: 'Ravi Kumar',
+        email: 'ravi.kumar@example.com',
         course_id: 'CS101',
         attendance: 96,
         marks: 96,
@@ -17,8 +18,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Priya Patel',
-        email: 'priya.patel@example.com',
+        name: 'Priya Singh',
+        email: 'priya.singh@example.com',
         course_id: 'CS101',
         attendance: 65,
         marks: 72,
@@ -26,8 +27,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Rahul Verma',
-        email: 'rahul.verma@example.com',
+        name: 'Amit Sharma',
+        email: 'amit.sharma@example.com',
         course_id: 'CS102',
         attendance: 72,
         marks: 68,
@@ -35,8 +36,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Anjali Gupta',
-        email: 'anjali.gupta@example.com',
+        name: 'Neha Gupta',
+        email: 'neha.gupta@example.com',
         course_id: 'CS102',
         attendance: 88,
         marks: 85,
@@ -44,8 +45,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Vikram Singh',
-        email: 'vikram.singh@example.com',
+        name: 'Raj Malhotra',
+        email: 'raj.malhotra@example.com',
         course_id: 'CS201',
         attendance: 91,
         marks: 89,
@@ -53,8 +54,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Kavita Reddy',
-        email: 'kavita.reddy@example.com',
+        name: 'Ananya Desai',
+        email: 'ananya.desai@example.com',
         course_id: 'CS201',
         attendance: 94,
         marks: 94,
@@ -62,8 +63,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Deepak Kumar',
-        email: 'deepak.kumar@example.com',
+        name: 'Sanjay Patel',
+        email: 'sanjay.patel@example.com',
         course_id: 'CS301',
         attendance: 78,
         marks: 75,
@@ -71,8 +72,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Sneha Malhotra',
-        email: 'sneha.malhotra@example.com',
+        name: 'Meera Reddy',
+        email: 'meera.reddy@example.com',
         course_id: 'CS301',
         attendance: 89,
         marks: 82,
@@ -80,8 +81,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Rajesh Khanna',
-        email: 'rajesh.khanna@example.com',
+        name: 'Vijay Kapoor',
+        email: 'vijay.kapoor@example.com',
         course_id: 'CS202',
         attendance: 92,
         marks: 92,
@@ -89,8 +90,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Meena Iyer',
-        email: 'meena.iyer@example.com',
+        name: 'Sunita Joshi',
+        email: 'sunita.joshi@example.com',
         course_id: 'CS202',
         attendance: 86,
         marks: 81,
@@ -98,8 +99,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Karthik Rajan',
-        email: 'karthik.rajan@example.com',
+        name: 'Krishna Rao',
+        email: 'krishna.rao@example.com',
         course_id: 'CS101',
         attendance: 82,
         marks: 78,
@@ -107,8 +108,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Pooja Nair',
-        email: 'pooja.nair@example.com',
+        name: 'Lakshmi Nair',
+        email: 'lakshmi.nair@example.com',
         course_id: 'CS302',
         attendance: 76,
         marks: 70,
@@ -116,8 +117,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Sunil Agarwal',
-        email: 'sunil.agarwal@example.com',
+        name: 'Arjun Menon',
+        email: 'arjun.menon@example.com',
         course_id: 'CS302',
         attendance: 73,
         marks: 65,
@@ -134,8 +135,8 @@ export const seedDemoData = async (userId: string) => {
         user_id: userId
       },
       {
-        name: 'Anand Joshi',
-        email: 'anand.joshi@example.com',
+        name: 'Rajesh Khanna',
+        email: 'rajesh.khanna@example.com',
         course_id: 'CS202',
         attendance: 90,
         marks: 88,
