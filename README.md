@@ -20,7 +20,6 @@
 -   **Team Collaboration:** Role-based access control and collaborative workspaces for teams.
 -   **Real-time Notifications:** Stay updated on project progress and mentions.
 -   **Chart Visualization:** Visualize project timelines and data with interactive charts.
--   **Secure Authentication:** Simple and secure login with OAuth 2.0.
 
 ---
 
@@ -29,7 +28,7 @@
 -   **Frontend:** React.js with TypeScript
 -   **Backend:** Node.js with Express.js
 -   **Database:** PostgreSQL
--   **Authentication:** OAuth 2.0
+-   **Authentication:** JWT
 
 ---
 
